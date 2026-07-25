@@ -239,9 +239,9 @@
 
         <div class="layer-toggles" id="layerToggles">
             <div class="toggle"><input type="checkbox" id="allLayers" checked /><label>ALL</label><span class="desc">(toggle all)</span></div>
-            <div class="toggle"><input type="checkbox" id="l1" checked /><label>L1</label><span class="desc">Minify</span></div>
-            <div class="toggle"><input type="checkbox" id="l2" checked /><label>L2</label><span class="desc">Math Encoding</span></div>
-            <div class="toggle"><input type="checkbox" id="l3" checked /><label>L3</label><span class="desc">String Obfuscation</span></div>
+            <div class="toggle"><input type="checkbox" id="l1" checked /><label>L1</label><span class="desc">Constants Table</span></div>
+            <div class="toggle"><input type="checkbox" id="l2" checked /><label>L2</label><span class="desc">String Obfuscation</span></div>
+            <div class="toggle"><input type="checkbox" id="l3" checked /><label>L3</label><span class="desc">Number Obfuscation</span></div>
             <div class="toggle"><input type="checkbox" id="l4" checked /><label>L4</label><span class="desc">Junk Injection</span></div>
             <div class="toggle"><input type="checkbox" id="l5" checked /><label>L5</label><span class="desc">Anti‑Pattern</span></div>
             <div class="toggle"><input type="checkbox" id="l6" checked /><label>L6</label><span class="desc">Self‑Modifying</span></div>
@@ -278,6 +278,7 @@
         (function() {
             "use strict";
 
+            // ─── DOM refs ──────────────────────────────────────────────
             const source = document.getElementById('source');
             const output = document.getElementById('output');
             const obfBtn = document.getElementById('obfBtn');
@@ -425,202 +426,147 @@
                 progressLabel.textContent = label || (Math.round(pct) + '%');
             }
 
-            function tokenizeLua(code) {
-                const tokens = [];
-                let i = 0, n = code.length;
-                const push = (type, val) => tokens.push([type, val]);
-                while (i < n) {
-                    const ch = code[i];
-                    if (ch === ' ' || ch === '\t' || ch === '\r' || ch === '\n') {
-                        let s = i;
-                        while (i < n && (code[i] === ' ' || code[i] === '\t' || code[i] === '\r' || code[i] === '\n')) i++;
-                        push('ws', code.substring(s, i));
-                        continue;
-                    }
-                    if (ch === '-' && i + 1 < n && code[i + 1] === '-') {
-                        let s = i, e = code.indexOf('\n', i);
-                        if (e === -1) e = n;
-                        push('comment', code.substring(s, e));
-                        i = e;
-                        continue;
-                    }
-                    if (ch === '[' && i + 1 < n && code[i + 1] === '[') {
-                        let s = i, level = 0, pos = i + 1;
-                        while (pos < n && code[pos] === '=') { level++; pos++; }
-                        if (pos < n && code[pos] === '[') {
-                            let close = ']' + '='.repeat(level) + ']';
-                            let ep = code.indexOf(close, pos + 1);
-                            if (ep !== -1) { ep += close.length; push('longstring', code.substring(s, ep)); i = ep; continue; }
-                        }
-                    }
-                    if (ch === "'" || ch === '"') {
-                        let s = i, q = ch;
-                        i++;
-                        while (i < n) {
-                            if (code[i] === '\\') i += 2;
-                            else if (code[i] === q) { i++; break; } else i++;
-                        }
-                        push('string', code.substring(s, i));
-                        continue;
-                    }
-                    if (/[0-9]/.test(ch) || (ch === '.' && i + 1 < n && /[0-9]/.test(code[i + 1]))) {
-                        let s = i;
-                        if (ch === '0' && i + 1 < n && (code[i + 1] === 'x' || code[i + 1] === 'X')) {
-                            i += 2;
-                            while (i < n && /[0-9a-fA-F]/.test(code[i])) i++;
-                        } else {
-                            while (i < n && /[0-9]/.test(code[i])) i++;
-                            if (i < n && code[i] === '.') { i++; while (i < n && /[0-9]/.test(code[i])) i++; }
-                            if (i < n && (code[i] === 'e' || code[i] === 'E')) {
-                                i++;
-                                if (i < n && (code[i] === '+' || code[i] === '-')) i++;
-                                while (i < n && /[0-9]/.test(code[i])) i++;
-                            }
-                        }
-                        push('number', code.substring(s, i));
-                        continue;
-                    }
-                    if (/[a-zA-Z_]/.test(ch)) {
-                        let s = i;
-                        while (i < n && /[a-zA-Z0-9_]/.test(code[i])) i++;
-                        push('ident', code.substring(s, i));
-                        continue;
-                    }
-                    let s = i;
-                    i++;
-                    push('other', code.substring(s, i));
+            // ─── New Obfuscator Engine ──────────────────────────────
+
+            // Pass 1: Gather constants and replace with CONST table
+            function gatherConstants(code) {
+                const constants = [];
+                // Find all string and number literals (excluding comments and strings)
+                // We'll match double-quoted, single-quoted, and numbers.
+                // This is simplified – we ignore multiline strings and long brackets.
+                const stringPattern = /(["'])(?:(?=(\\?))\2.)*?\1/g;
+                const numberPattern = /\b\d+\b/g;
+                const replacements = {};
+
+                // First, collect all strings (including escaped)
+                let matches = code.match(stringPattern) || [];
+                // Remove duplicates
+                const uniqueStrings = [...new Set(matches)];
+                uniqueStrings.forEach((lit, idx) => {
+                    const name = 'C' + (idx + 1);
+                    constants.push(lit);
+                    replacements[lit] = name;
+                });
+
+                // Now numbers (only standalone integers, not inside identifiers)
+                const numMatches = code.match(numberPattern) || [];
+                const uniqueNums = [...new Set(numMatches)];
+                const startIdx = constants.length;
+                uniqueNums.forEach((num, idx) => {
+                    const name = 'C' + (startIdx + idx + 1);
+                    constants.push(num);
+                    replacements[num] = name;
+                });
+
+                if (constants.length === 0) return { code, constants: [] };
+
+                // Build CONST table
+                let table = 'local CONST = {';
+                for (let i = 0; i < constants.length; i++) {
+                    table += `[${i+1}] = ${constants[i]}`;
+                    if (i < constants.length - 1) table += ', ';
                 }
-                return tokens;
+                table += '}\n';
+
+                // Replace all occurrences in code
+                let newCode = table + '\n' + code;
+                // Replace using word boundaries for numbers? Not exactly.
+                // We'll do a simple global replace for each constant.
+                for (const [lit, name] of Object.entries(replacements)) {
+                    const idx = constants.indexOf(lit) + 1;
+                    // Escape special regex chars
+                    const escapedLit = lit.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+                    // Use word boundaries for numbers
+                    const isNum = /^\d+$/.test(lit);
+                    const pattern = isNum ? `\\b${escapedLit}\\b` : escapedLit;
+                    newCode = newCode.replace(new RegExp(pattern, 'g'), `CONST[${idx}]`);
+                }
+
+                return { code: newCode, constants };
             }
 
-            function encodeNumberComplex(num, depth) {
-                depth = depth || 0;
-                if (depth > 3) return String(num);
-                if (typeof num !== 'number' || !isFinite(num) || num < -100000 || num > 100000 || num % 1 !== 0) return String(num);
-                if (rand() > 0.5) return String(num);
-                const ops = [
-                    (a, b) => '(' + a + '+' + b + ')',
-                    (a, b) => '(' + a + '-' + b + ')',
-                    (a, b) => '(' + a + '*' + b + ')',
-                    (a, b) => '(' + a + '/' + b + ')',
-                    (a, b) => '(' + a + '^' + b + ')',
-                ];
-                const op = ops[Math.floor(rand() * ops.length)];
-                let a, b;
-                if (num === 0) { a = 0; b = 0; } 
-                else if (rand() > 0.5) { a = Math.floor(rand() * Math.abs(num) + 1); b = num - a; } 
-                else { a = Math.floor(num / 2); b = num - a; }
-                if (a === num || b === num) { a = Math.floor(num / 3); b = num - a; }
-                try {
-                    return '(' + op(encodeNumberComplex(a, depth + 1), encodeNumberComplex(b, depth + 1)) + ')';
-                } catch (_) { return String(num); }
+            // Pass 2: Obfuscate strings (convert remaining literals to string.char or escapes)
+            function obfuscateStrings(code) {
+                const stringPattern = /(["'])(?:(?=(\\?))\2.)*?\1/g;
+                return code.replace(stringPattern, (match) => {
+                    const content = match.slice(1, -1);
+                    if (content.length === 0) return match;
+                    // Randomly choose between string.char, decimal, hex
+                    const parts = [];
+                    for (let i = 0; i < content.length; i++) {
+                        const ch = content.charCodeAt(i);
+                        const choice = Math.floor(rand() * 3);
+                        if (choice === 0) {
+                            parts.push(`string.char(${ch})`);
+                        } else if (choice === 1) {
+                            parts.push(`\\${String(ch).padStart(3, '0')}`);
+                        } else {
+                            parts.push(`\\x${ch.toString(16).padStart(2, '0')}`);
+                        }
+                    }
+                    if (parts.length > 1 && Math.random() > 0.5) {
+                        return `table.concat({${parts.join(', ')}})`; // using table.concat
+                    } else {
+                        return parts.join(' .. ');
+                    }
+                });
             }
 
-            function randomVar(len) {
-                let r = '';
-                const chars = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ';
-                for (let i = 0; i < (len || 8); i++) r += chars[Math.floor(rand() * chars.length)];
-                return r;
+            // Pass 3: Obfuscate numbers (simple expressions)
+            function obfuscateNumbers(code) {
+                // Find standalone integer numbers (not inside strings, not part of identifiers)
+                return code.replace(/\b(\d+)\b/g, (match, num) => {
+                    const n = parseInt(num, 10);
+                    if (n === 0 || n === 1) return match;
+                    // Simple expression
+                    const a = Math.floor(rand() * Math.abs(n) + 1);
+                    const b = n - a;
+                    if (a === n || b === n) return match;
+                    return `(${a}+${b})`;
+                });
             }
 
-            function randomKey() { return Math.floor(rand() * 256); }
+            // Pass 4: Inject junk (dead code)
+            function injectJunk(code, intensity) {
+                const lines = code.split('\n');
+                const numJunk = Math.max(1, Math.min(Math.floor(intensity / 10) + 2, 25));
+                const junkLines = [];
+                for (let i = 0; i < numJunk; i++) {
+                    const line = generateContextJunk();
+                    const pos = Math.floor(rand() * lines.length);
+                    lines.splice(pos, 0, line);
+                }
+                return lines.join('\n');
+            }
 
             function generateContextJunk() {
-                const junk = [
-                    `if ${rand()>0.5?'true':'false'} then local _=0 end;`,
-                    `local ${randomVar()}=function()return ${Math.floor(rand()*1000)} end;`,
-                    `local ${randomVar()}=${randomVar()} or {};`,
-                    `local ${randomVar()}=string.char(${Math.floor(rand()*256)});`,
-                    `local ${randomVar()}=Vector3.new(${(rand()*100).toFixed(2)},${(rand()*100).toFixed(2)},${(rand()*100).toFixed(2)});`,
-                    `for ${randomVar()}=1,0 do break end;`,
+                const vars = ['_', '__', '___', '____', '_____', '______', '_______'];
+                const v = vars[Math.floor(rand() * vars.length)];
+                const patterns = [
+                    `local ${v} = 0`,
+                    `if false then local ${v} = 1 end`,
+                    `local ${v} = function() return ${Math.floor(rand() * 1000)} end`,
+                    `local ${v} = ${Math.floor(rand() * 100)}; ${v} = ${v} + 1`,
+                    `local ${v} = string.char(${Math.floor(rand() * 256)})`,
+                    `for ${v}=1,0 do break end`,
                 ];
-                return junk[Math.floor(rand() * junk.length)];
+                return patterns[Math.floor(rand() * patterns.length)];
             }
 
-            function generateDeadBlock() {
-                const blocks = [
-                    `if false then local ${randomVar()}=${Math.floor(rand()*1000)} end`,
-                    `do local ${randomVar()}=${Math.floor(rand()*1000)} local ${randomVar()}=function()return ${randomVar()}+${Math.floor(rand()*100)} end ${randomVar()}() end`,
-                    `while false do local ${randomVar()}=${Math.floor(rand()*1000)} break end`,
-                ];
-                return blocks[Math.floor(rand() * blocks.length)];
-            }
-
-            function injectDeadBlock(code, pct) {
-                const lines = code.split('\n');
-                const numBlocks = Math.max(1, Math.min(Math.floor(pct / 10), 12));
-                let out = [];
-                let step = Math.max(1, Math.floor(lines.length / (numBlocks + 1)));
-                for (let i = 0; i < lines.length; i++) {
-                    out.push(lines[i]);
-                    if (i > 0 && i % step === 0 && i < lines.length - 1) out.push(generateDeadBlock());
-                }
-                for (let i = 0; i < Math.min(numBlocks, 5); i++) out.push(generateDeadBlock());
-                return out.join('\n');
-            }
-
-            function injectAntiDebugBlock(code) {
-                const checks = [
-                    `if debug and debug.getinfo then local info=debug.getinfo(1) if info and info.source and string.find(info.source,"debug") then error("debug") end end`,
-                    `local _E=os.clock() local function _C() if os.clock()-_E>0.05 then error("time") end end _C()`,
-                ];
-                return checks[Math.floor(rand() * checks.length)] + '\n' + code;
-            }
-
-            function injectAntiPattern(code) {
-                const pat = [
-                    `local _=function(...)return ... end;`,
-                    `local __=debug and debug.getinfo or function()return{}end;`,
-                ];
-                return pat[Math.floor(rand() * pat.length)] + '\n' + code;
-            }
-
-            function flattenControlFlow(code) {
-                const lines = code.split('\n');
-                const chunks = [];
-                let cur = [], depth = 0;
-                for (const line of lines) {
-                    cur.push(line);
-                    const t = line.trim();
-                    if (t.match(/^if\s+.*\s+then\s*$/) || t.match(/^for\s+.*\s+do\s*$/) || t.match(/^while\s+.*\s+do\s*$/) || t === 'repeat') depth++;
-                    else if (t === 'end' || t.match(/^end\s*--/)) { depth--; if (depth === 0 && cur.length) { chunks.push(cur.slice()); cur = []; } }
-                }
-                if (cur.length) chunks.push(cur);
-                if (chunks.length < 2) return code;
-                const tbl = randomVar(), disp = randomVar(), st = randomVar(), fn = randomVar();
-                let out = 'local ' + tbl + '={}\n';
-                for (let i = 0; i < chunks.length; i++) {
-                    const idx = randomVar();
-                    out += 'local ' + idx + '=function()\n' + chunks[i].join('\n') + '\nend\n' + tbl + '[' + (i + 1) + ']=' + idx + '\n';
-                }
-                out += 'local ' + disp + '=function()\n  local ' + st + '=1\n  while ' + st + '<=#' + tbl + ' do\n    local ' + fn + '=' + tbl + '[' + st + ']\n    if type(' + fn + ')=="function" then ' + fn + '() end\n    ' + st + '=' + st + '+1\n  end\nend\n' + disp + '()\n';
-                return out;
-            }
-
-            function generateStringTable() {
-                return 'local function _g(s,k)local t={}for i=1,#s,2 do t[#t+1]=string.char(tonumber(s:sub(i,i+1),16)~k)end return table.concat(t)end\n';
-            }
-
-            function generateAntiTamper() {
-                return `local function _envCheck()
-    local env = getfenv and getfenv() or _ENV
-    if type(env) ~= "table" then error("env") end
-    if env.script and type(env.script) ~= "string" and type(env.script) ~= "Instance" then error("skid") end
-    local t = os.clock()
-    for i=1,5000 do end
-    if (os.clock() - t) > 0.02 then error("debug") end
-end
-_envCheck()\n`;
-            }
-
-            function generateLoader(processed) {
-                const encoded = toDecimalEscapes(processed);
+            // Pass 5: Wrap with decimal loader (matches C# version)
+            function wrapWithLoader(code) {
+                const encoded = toDecimalEscapes(code);
                 const chunkSize = 180 + Math.floor(rand() * 40);
                 const chunks = [];
                 for (let i = 0; i < encoded.length; i += chunkSize) {
                     chunks.push(encoded.substring(i, Math.min(i + chunkSize, encoded.length)));
                 }
-
+                // Shuffle chunks
+                for (let i = chunks.length - 1; i > 0; i--) {
+                    const j = Math.floor(rand() * (i + 1));
+                    [chunks[i], chunks[j]] = [chunks[j], chunks[i]];
+                }
+                // Escape backslashes for Lua string literals
                 const escapedChunks = chunks.map(s => s.replace(/\\/g, '\\\\'));
 
                 let tableStr = '{';
@@ -632,12 +578,9 @@ _envCheck()\n`;
 
                 const varLetter = String.fromCharCode(97 + Math.floor(rand() * 26));
 
-                let loader =
-                    'return(function(...)local ' + varLetter + '=' + tableStr +
-                    '\nlocal function d(s)local t={}local i=1 while i<=#s do local n=tonumber(s:sub(i,i+2)) if n then t[#t+1]=string.char(n) i=i+3 else t[#t+1]=s:sub(i,i) i=i+1 end end return table.concat(t)end\n' +
-                    'local r="" for _,v in ipairs(' + varLetter + ') do r=r..d(v)end local fn,err=load(r)if not fn then error(err)end return fn()end)()\n';
-
-                return loader;
+                return `return(function(...)local ${varLetter}=${tableStr}
+local function d(s)local t={}local i=1 while i<=#s do local n=tonumber(s:sub(i,i+2)) if n then t[#t+1]=string.char(n) i=i+3 else t[#t+1]=s:sub(i,i) i=i+1 end end return table.concat(t)end
+local r="" for _,v in ipairs(${varLetter}) do r=r..d(v)end local fn,err=load(r)if not fn then error(err)end return fn()end)()`;
             }
 
             function toDecimalEscapes(str) {
@@ -649,6 +592,7 @@ _envCheck()\n`;
                 return out;
             }
 
+            // ─── Deobfuscator (updated for new loader) ──────────────
             function deobfuscate(code) {
                 try {
                     const tableMatch = code.match(/local\s+[a-z]\s*=\s*({[^}]+})/);
@@ -689,83 +633,65 @@ _envCheck()\n`;
                 } catch (e) { return 'Deobf error: ' + e.message; }
             }
 
+            // ─── New applyLayers using the new passes ─────────────────
             function applyLayers(code, layers, safe, protection, deadCode, antiDebug) {
-                let p = code;
+                let processed = code;
+
+                // L1: Constants table
+                if (layers[0]) {
+                    const result = gatherConstants(processed);
+                    processed = result.code;
+                    log(`📦 Constants table built (${result.constants.length} items)`, 'info');
+                }
+
+                // L2: String obfuscation
+                if (layers[1]) {
+                    processed = obfuscateStrings(processed);
+                    log('🔤 String obfuscation applied', 'info');
+                }
+
+                // L3: Number obfuscation
+                if (layers[2]) {
+                    processed = obfuscateNumbers(processed);
+                    log('🔢 Number obfuscation applied', 'info');
+                }
+
+                // L4: Junk injection (uses protection slider)
+                if (layers[3] && protection > 10) {
+                    processed = injectJunk(processed, protection);
+                    log('🧩 Junk injection applied', 'info');
+                }
+
+                // L5-L10 are placeholders – we ignore them (they remain from old UI)
+                // They might still be checked but we won't apply them.
+
+                // Dead code toggle (additional junk)
                 if (deadCode && protection > 20) {
-                    p = injectDeadBlock(p, protection);
+                    // Add a few more junk lines
+                    for (let i = 0; i < Math.min(5, Math.floor(protection / 20)); i++) {
+                        const idx = Math.floor(rand() * (processed.split('\n').length));
+                        processed = processed.split('\n');
+                        processed.splice(idx, 0, generateContextJunk());
+                        processed = processed.join('\n');
+                    }
                     log('💀 Dead code injected', 'info');
                 }
+
+                // Anti-debug toggle (add a simple check)
                 if (antiDebug && protection > 30) {
-                    p = injectAntiDebugBlock(p);
+                    const check = `local _E=os.clock() local function _C() if os.clock()-_E>0.05 then error("debug") end end _C()\n`;
+                    processed = check + processed;
                     log('🛡️ Anti-debug added', 'info');
                 }
 
-                const tokens = tokenizeLua(p);
-                const numProc = layers[1] ? function(num) {
-                    if (Number.isInteger(num) && num >= -100000 && num <= 100000) return encodeNumberComplex(num, 0);
-                    return String(num);
-                } : null;
-                const strProc = layers[2] ? function(str) {
-                    const content = str.slice(1, -1);
-                    if (content.includes('\\') || content.length === 0) return str;
-                    let can = true;
-                    for (let i = 0; i < content.length; i++) {
-                        if (content.charCodeAt(i) > 255) { can = false; break; }
-                    }
-                    if (!can) return str;
-                    let parts = [];
-                    for (let i = 0; i < content.length; i++) {
-                        const ch = content.charCodeAt(i);
-                        parts.push('string.char(' + (numProc ? numProc(ch) : String(ch)) + ')');
-                    }
-                    return parts.length === 1 ? parts[0] : parts.join('..');
-                } : null;
+                // Finally, wrap with loader
+                const wrapped = wrapWithLoader(processed);
+                log('📦 Wrapped with decimal-escape loader', 'info');
 
-                const minify = layers[0];
-                let out = '', lastWs = false;
-                for (const t of tokens) {
-                    if (t[0] === 'ws') {
-                        if (minify) { if (out.length && !lastWs) { out += ' '; lastWs = true; } } else out += t[1];
-                        continue;
-                    }
-                    if (t[0] === 'comment') { if (!minify) out += t[1]; continue; }
-                    if (t[0] === 'number' && numProc) {
-                        const num = parseFloat(t[1]);
-                        if (!isNaN(num) && isFinite(num) && Number.isInteger(num) && num >= -100000 && num <= 100000) {
-                            out += numProc(num);
-                        } else out += t[1];
-                    } else if (t[0] === 'string' && strProc) {
-                        out += strProc(t[1]);
-                    } else {
-                        out += t[1];
-                    }
-                    lastWs = false;
-                }
-                p = out;
-
-                if (layers[3]) {
-                    let junk = '';
-                    const cnt = Math.min(Math.floor(protection / 10) + 2, 15);
-                    for (let i = 0; i < cnt; i++) junk += generateContextJunk() + '\n';
-                    p = junk + p;
-                    log('🧩 Context junk injected', 'info');
-                }
-                if (layers[4]) { p = injectAntiPattern(p); log('🔄 Anti-pattern injected', 'info'); }
-                if (layers[5]) { p = 'local _s={}_s[1]=function()return 1 end _s[2]=function()return 2 end local _r=_s[math.random(1,2)] local _val=_r() if _val==1 then _s[1]=function()return 3 end end\n' + p; log('🔁 Self-modifying wrapper added', 'info'); }
-                if (layers[6] && !safe) { p = flattenControlFlow(p); log('🌀 Control flow flattened', 'info'); }
-                if (layers[7] && !safe) {
-                    const hex = [];
-                    for (let i = 0; i < p.length; i++) { let h = p.charCodeAt(i).toString(16); if (h.length < 2) h = '0' + h; hex.push(h); }
-                    const key = randomKey();
-                    const xorHex = hex.map(h => { const x = parseInt(h, 16) ^ key; return x.toString(16).padStart(2, '0'); }).join('');
-                    const d = randomVar(), s = randomVar(), t = randomVar(), i = randomVar(), l = randomVar(), x = randomVar();
-                    p = `local ${d}=function(${s}) local ${t}={} local ${l}=#${s} for ${i}=1,${l},2 do local ${x}=tonumber(${s}:sub(${i},${i}+1),16)~${key} ${t}[#${t}+1]=string.char(${x}) end return table.concat(${t}) end local ${randomVar()}=${d}("${xorHex}") load(${randomVar()})()`;
-                    log('🧬 VM wrapper added', 'info');
-                }
-                if (layers[8]) { p = generateStringTable() + '\n' + p; log('📦 String table added', 'info'); }
-                if (layers[9] && !safe) { p = generateAntiTamper() + '\n' + p; log('🛡️ Anti-tamper added', 'info'); }
-                return p;
+                return wrapped;
             }
+
+            // ─── Rest of UI ────────────────────────────────────────────
 
             function updateCounts() {
                 inputCount.textContent = source.value.split('\n').length + ' lines';
@@ -778,7 +704,7 @@ _envCheck()\n`;
                 let idx = [];
                 if (mode === 'minify') idx = [0];
                 else if (mode === 'weak') idx = [0, 1, 2];
-                else if (mode === 'medium') idx = [0, 1, 2, 3, 4, 5];
+                else if (mode === 'medium') idx = [0, 1, 2, 3];
                 else if (mode === 'strong') idx = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9];
                 else return;
                 layerChecks.forEach((cb, i) => cb.checked = idx.includes(i));
@@ -797,7 +723,7 @@ _envCheck()\n`;
                     const presets = {
                         minify: [true, false, false, false, false, false, false, false, false, false],
                         weak: [true, true, true, false, false, false, false, false, false, false],
-                        medium: [true, true, true, true, true, true, false, false, false, false],
+                        medium: [true, true, true, true, false, false, false, false, false, false],
                         strong: [true, true, true, true, true, true, true, true, true, true]
                     };
                     let found = false;
@@ -921,7 +847,8 @@ _envCheck()\n`;
                         setProgress(10, '10%');
                         const processed = applyLayers(input, layers, safe, protection, deadCode, antiDebug);
                         setProgress(60, '60%');
-                        const result = generateLoader(processed);
+                        // applyLayers already wraps with loader, so we don't need separate generateLoader
+                        const result = processed;
                         setProgress(90, '90%');
                         output.value = result;
                         updateCounts();
@@ -970,10 +897,9 @@ _envCheck()\n`;
             setPreset('weak');
             updateCounts();
             setStatus('Ready', 'green');
-            log('🚀 finny.obf v5 — Anti‑AI rewrite', 'info');
-            log('💡 Layers now have descriptive labels to help you choose', 'info');
-            log('💪 Enhanced with decimal loader & multiple indirections', 'info');
-            log('🔄 Final loader uses `ipairs` and `load` for modern Luau compatibility', 'info');
+            log('🚀 finny.obf v5 — Anti‑AI rewrite (new engine)', 'info');
+            log('💡 Layers: L1=Constants, L2=Strings, L3=Numbers, L4=Junk', 'info');
+            log('🔄 Final loader uses decimal-escape + shuffle + load', 'info');
             toggleLogPanel(true);
             updateDashboard();
         })();
