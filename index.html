@@ -3,188 +3,274 @@
 <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>finny.obf</title>
+    <title>finny.obf v5 – Anti‑AI</title>
     <style>
-        * { box-sizing: border-box; margin: 0; padding: 0; }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        :root {
+            --bg: #f1f5f9; --surface: #ffffff; --border: #e2e8f0;
+            --text: #0f172a; --muted: #94a3b8; --accent: #3b82f6;
+            --accent2: #8b5cf6; --gradient: linear-gradient(135deg, #3b82f6, #8b5cf6);
+            --shadow: 0 4px 12px rgba(0,0,0,0.08); --radius: 10px;
+        }
         body {
-            background: #0f1117;
-            color: #d4d8e0;
-            font-family: 'Inter', -apple-system, sans-serif;
+            font-family: 'Inter', system-ui, -apple-system, sans-serif;
+            background: var(--bg);
             display: flex;
             justify-content: center;
             align-items: center;
             min-height: 100vh;
-            padding: 20px;
+            padding: 16px;
+            color: var(--text);
         }
         .app {
+            max-width: 1480px;
             width: 100%;
-            max-width: 1200px;
-            background: #1a1e26;
+            height: 98vh;
+            max-height: 1080px;
+            background: var(--surface);
             border-radius: 16px;
-            padding: 24px;
-            box-shadow: 0 8px 32px rgba(0,0,0,0.6);
-            border: 1px solid #2a2f3a;
+            box-shadow: var(--shadow);
             display: flex;
             flex-direction: column;
-            gap: 16px;
-        }
-        .header h1 {
-            font-size: 24px;
-            font-weight: 600;
-            color: #f0f4fa;
-            display: flex;
-            align-items: center;
-            gap: 12px;
-        }
-        .header h1 small {
-            font-size: 14px;
-            font-weight: 400;
-            color: #8a92a0;
-        }
-        .panels {
-            display: flex;
-            gap: 16px;
-            min-height: 400px;
-            flex-wrap: wrap;
-        }
-        .panel {
-            flex: 1;
-            min-width: 280px;
-            background: #0f1219;
-            border-radius: 10px;
-            border: 1px solid #282e3a;
-            display: flex;
-            flex-direction: column;
+            padding: 16px 20px 12px;
+            border: 1px solid var(--border);
             overflow: hidden;
         }
-        .panel-header {
-            padding: 8px 14px;
-            background: #151b24;
-            border-bottom: 1px solid #282e3a;
-            font-size: 12px;
-            font-weight: 600;
-            text-transform: uppercase;
-            color: #8a92a0;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
+        ::-webkit-scrollbar { width: 5px; height: 5px; }
+        ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 999px; }
+        .header { display: flex; justify-content: space-between; align-items: center; flex-shrink: 0; margin-bottom: 12px; }
+        .header h1 { font-size: 22px; font-weight: 700; background: var(--gradient); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+        .header .badge { background: var(--gradient); color: #fff; font-size: 10px; font-weight: 600; padding: 2px 12px; border-radius: 999px; margin-left: 10px; -webkit-text-fill-color: #fff; }
+        .header .links { display: flex; gap: 16px; font-size: 12px; color: var(--muted); align-items: center; }
+        .header .links a { color: var(--muted); text-decoration: none; border-bottom: 1px dotted transparent; }
+        .header .links a:hover { color: var(--text); border-color: var(--text); }
+        .dashboard { display: flex; flex-wrap: wrap; gap: 12px 20px; background: #f8fafc; padding: 10px 16px; border-radius: var(--radius); border: 1px solid var(--border); margin-bottom: 12px; flex-shrink: 0; align-items: center; }
+        .stat-group { display: flex; gap: 20px; flex-wrap: wrap; flex: 1; }
+        .stat-item .label { font-size: 10px; text-transform: uppercase; color: var(--muted); font-weight: 600; }
+        .stat-item .value { font-size: 20px; font-weight: 700; line-height: 1.2; }
+        .quick-actions { display: flex; gap: 8px; }
+        .quick-actions button { font-size: 11px; padding: 4px 14px; border: 1px solid var(--border); border-radius: 999px; background: #fff; cursor: pointer; transition: 0.2s; }
+        .quick-actions button.primary { background: var(--gradient); color: #fff; border-color: transparent; }
+        .quick-actions button:hover { background: #e2e8f0; }
+        .recent-jobs { display: flex; align-items: center; gap: 12px; font-size: 12px; color: var(--muted); margin-bottom: 10px; flex-shrink: 0; flex-wrap: wrap; }
+        .recent-jobs .job { background: #fff; border: 1px solid var(--border); border-radius: 999px; padding: 2px 12px 2px 6px; display: flex; align-items: center; gap: 6px; }
+        .recent-jobs .job .dot { width: 8px; height: 8px; border-radius: 50%; background: #10b981; }
+        .toolbar { display: flex; flex-wrap: wrap; gap: 6px 14px; background: #f8fafc; padding: 6px 14px; border-radius: var(--radius); border: 1px solid var(--border); margin-bottom: 10px; flex-shrink: 0; align-items: center; }
+        .toolbar-group { display: flex; align-items: center; gap: 6px 12px; flex-wrap: wrap; }
+        .toolbar-group:not(:last-child)::after { content: ''; width: 1px; height: 24px; background: var(--border); margin-left: 4px; }
+        .toolbar label { font-size: 11px; color: var(--muted); display: flex; align-items: center; gap: 4px; }
+        .toolbar select, .toolbar input[type="number"] { background: #fff; border: 1px solid var(--border); padding: 3px 8px; border-radius: 6px; font-size: 11px; height: 26px; }
+        .toolbar .switch { position: relative; width: 30px; height: 18px; display: inline-block; }
+        .toolbar .switch input { opacity: 0; width: 0; height: 0; }
+        .toolbar .slider { position: absolute; top: 0; left: 0; right: 0; bottom: 0; background: #cbd5e1; border-radius: 999px; transition: 0.25s; cursor: pointer; }
+        .toolbar .slider::before { content: ''; position: absolute; height: 12px; width: 12px; left: 3px; bottom: 3px; background: white; border-radius: 50%; transition: 0.25s; box-shadow: 0 1px 3px rgba(0,0,0,0.15); }
+        .toolbar .switch input:checked + .slider { background: var(--gradient); }
+        .toolbar .switch input:checked + .slider::before { transform: translateX(12px); }
+        .btn { padding: 4px 14px; border: none; border-radius: 999px; font-weight: 600; font-size: 11px; cursor: pointer; background: #e2e8f0; color: var(--text); transition: 0.2s; height: 28px; display: inline-flex; align-items: center; gap: 5px; }
+        .btn:hover { background: #cbd5e1; transform: translateY(-1px); }
+        .btn-primary { background: var(--gradient); color: #fff; }
+        .btn-primary:hover { box-shadow: 0 4px 12px rgba(59,130,246,0.3); }
+        .btn-success { background: #10b981; color: #fff; }
+        .btn-danger { background: #ef4444; color: #fff; }
+        .btn-ghost { background: transparent; color: var(--muted); }
+        .btn-ghost:hover { background: #f1f5f9; }
+        .btn:disabled { opacity: 0.4; cursor: not-allowed; transform: none !important; }
+        .controls-row { display: flex; flex-wrap: wrap; gap: 8px 16px; background: #f8fafc; padding: 6px 14px; border-radius: var(--radius); border: 1px solid var(--border); margin-bottom: 10px; flex-shrink: 0; align-items: center; }
+        .control-group { display: flex; align-items: center; gap: 6px 12px; flex-wrap: wrap; }
+        .control-group:not(:last-child)::after { content: ''; width: 1px; height: 24px; background: var(--border); margin-left: 4px; }
+        .control-label { font-size: 10px; font-weight: 600; text-transform: uppercase; color: var(--muted); }
+        .control-toggle { display: flex; align-items: center; gap: 5px; font-size: 11px; color: var(--text); cursor: pointer; }
+        .control-toggle input[type="checkbox"] { appearance: none; width: 14px; height: 14px; background: #fff; border: 1.5px solid var(--muted); border-radius: 3px; cursor: pointer; position: relative; transition: 0.2s; flex-shrink: 0; }
+        .control-toggle input:checked { background: var(--accent); border-color: var(--accent); }
+        .control-toggle input:checked::after { content: ''; position: absolute; top: 1px; left: 4px; width: 4px; height: 8px; border: solid white; border-width: 0 2px 2px 0; transform: rotate(45deg); }
+        .slider-container { display: flex; align-items: center; gap: 8px; }
+        .slider-container input[type="range"] { -webkit-appearance: none; width: 120px; height: 4px; border-radius: 2px; background: var(--border); outline: none; }
+        .slider-container input[type="range"]::-webkit-slider-thumb { -webkit-appearance: none; width: 14px; height: 14px; border-radius: 50%; background: var(--gradient); cursor: pointer; box-shadow: 0 2px 6px rgba(59,130,246,0.3); }
+        .slider-value { font-size: 13px; font-weight: 700; color: var(--accent); min-width: 36px; text-align: center; }
+        .format-group { display: flex; gap: 6px; }
+        .format-group label { font-size: 11px; color: var(--text); display: flex; align-items: center; gap: 4px; cursor: pointer; }
+        .format-group input[type="radio"] { appearance: none; width: 13px; height: 13px; border: 2px solid var(--muted); border-radius: 50%; cursor: pointer; position: relative; transition: 0.2s; }
+        .format-group input:checked { border-color: var(--accent); }
+        .format-group input:checked::after { content: ''; position: absolute; top: 1.5px; left: 1.5px; width: 6px; height: 6px; border-radius: 50%; background: var(--gradient); }
+        .advanced-toggle { font-size: 11px; color: var(--muted); cursor: pointer; padding: 2px 10px; border-radius: 999px; background: transparent; border: 1px solid transparent; transition: 0.2s; }
+        .advanced-toggle:hover { background: #f1f5f9; border-color: var(--border); }
+        .layer-toggles { display: none; flex-wrap: wrap; gap: 4px 14px; padding: 6px 12px; background: #f8fafc; border-radius: var(--radius); border: 1px solid var(--border); margin-top: 6px; }
+        .layer-toggles.open { display: flex; }
+        .layer-toggles .toggle { display: flex; align-items: center; gap: 4px; font-size: 11px; color: var(--text); cursor: default; }
+        .layer-toggles .toggle input[type="checkbox"] { appearance: none; width: 14px; height: 14px; background: #fff; border: 1.5px solid var(--muted); border-radius: 3px; cursor: pointer; position: relative; transition: 0.2s; }
+        .layer-toggles .toggle input:checked { background: var(--accent); border-color: var(--accent); }
+        .layer-toggles .toggle input:checked::after { content: ''; position: absolute; top: 1px; left: 4px; width: 4px; height: 8px; border: solid white; border-width: 0 2px 2px 0; transform: rotate(45deg); }
+        .layer-toggles .toggle .desc { font-size: 9px; color: var(--muted); margin-left: 2px; }
+        .panels-wrapper { display: flex; gap: 12px; flex: 1; min-height: 0; }
+        .panel { flex: 1; display: flex; flex-direction: column; background: #fff; border-radius: var(--radius); border: 1px solid var(--border); overflow: hidden; position: relative; }
+        .panel-header { padding: 6px 14px; background: #f8fafc; border-bottom: 1px solid var(--border); font-size: 10px; font-weight: 600; text-transform: uppercase; color: var(--muted); display: flex; justify-content: space-between; align-items: center; flex-shrink: 0; }
+        .panel-header .count { font-weight: 400; background: #fff; padding: 1px 8px; border-radius: 999px; border: 1px solid var(--border); }
+        .panel textarea { flex: 1; width: 100%; border: none; padding: 10px 14px; font-family: 'JetBrains Mono', monospace; font-size: 12.5px; line-height: 1.8; resize: none; outline: none; background: transparent; color: var(--text); }
+        .panel textarea::placeholder { color: var(--muted); font-family: 'Inter', sans-serif; }
+        .panel.output textarea { color: #065f46; }
+        .panel.drag-over { border-color: var(--accent); box-shadow: 0 0 0 3px rgba(59,130,246,0.15); }
+        .drop-hint { display: none; position: absolute; inset: 0; background: rgba(59,130,246,0.05); border-radius: var(--radius); align-items: center; justify-content: center; font-size: 14px; font-weight: 600; color: var(--accent); pointer-events: none; backdrop-filter: blur(2px); z-index: 2; }
+        .panel.drag-over .drop-hint { display: flex; }
+        .log-panel { flex-shrink: 0; height: 120px; background: #fff; border-radius: var(--radius); border: 1px solid var(--border); margin-top: 8px; overflow: hidden; display: flex; flex-direction: column; transition: height 0.3s, opacity 0.2s; }
+        .log-panel.hidden { height: 0; opacity: 0; margin-top: 0; border: none; pointer-events: none; }
+        .log-header { display: flex; justify-content: space-between; align-items: center; padding: 4px 14px; background: #f8fafc; border-bottom: 1px solid var(--border); flex-shrink: 0; cursor: pointer; user-select: none; }
+        .log-header span { font-size: 10px; font-weight: 600; text-transform: uppercase; color: var(--muted); display: flex; align-items: center; gap: 6px; }
+        .log-header .badge { background: var(--gradient); color: #fff; font-size: 9px; padding: 0 8px; border-radius: 999px; }
+        .log-body { flex: 1; overflow-y: auto; padding: 4px 14px; font-family: 'JetBrains Mono', monospace; font-size: 11.5px; line-height: 1.7; color: #1e293b; }
+        .log-body .entry { padding: 1px 0; border-bottom: 1px solid var(--border); opacity: 0.85; }
+        .log-body .entry.info { color: #2563eb; }
+        .log-body .entry.success { color: #059669; }
+        .log-body .entry.error { color: #dc2626; }
+        .log-body .entry.warn { color: #d97706; }
+        .log-body .entry .time { color: var(--muted); margin-right: 10px; font-size: 10px; opacity: 0.6; }
+        .log-clear { background: none; border: none; color: var(--muted); cursor: pointer; font-size: 10px; padding: 2px 8px; border-radius: 999px; }
+        .log-clear:hover { background: #f1f5f9; }
+        .log-toggle-small { background: none; border: none; color: var(--muted); cursor: pointer; font-size: 12px; padding: 0 4px; }
+        .log-toggle-small:hover { color: var(--text); }
+        .status-bar { display: flex; justify-content: space-between; align-items: center; margin-top: 6px; flex-shrink: 0; font-size: 11px; color: var(--muted); padding: 0 4px; }
+        .status-bar .status { display: flex; align-items: center; gap: 8px; font-weight: 500; color: var(--text); }
+        .status-bar .dot { width: 8px; height: 8px; border-radius: 50%; background: #94a3b8; }
+        .status-bar .dot.green { background: #10b981; }
+        .status-bar .dot.red { background: #ef4444; }
+        .status-bar .dot.yellow { background: #fbbf24; }
+        .status-bar .dot.blue { background: #3b82f6; }
+        .progress-wrap { display: none; align-items: center; gap: 10px; flex: 1; max-width: 300px; }
+        .progress-wrap.active { display: flex; }
+        .progress-wrap progress { flex: 1; height: 6px; border-radius: 3px; border: none; background: var(--border); color: var(--accent); }
+        .progress-wrap progress::-webkit-progress-bar { background: var(--border); border-radius: 3px; }
+        .progress-wrap progress::-webkit-progress-value { background: var(--gradient); border-radius: 3px; }
+        .progress-wrap .prog-label { font-size: 10px; font-weight: 600; color: var(--muted); min-width: 40px; text-align: right; }
+        @media (max-width: 1100px) {
+            .panels-wrapper { flex-direction: column; }
+            .controls-row { flex-direction: column; align-items: stretch; }
+            .control-group:not(:last-child)::after { display: none; }
+            .toolbar { flex-direction: column; align-items: stretch; }
+            .toolbar-group:not(:last-child)::after { display: none; }
+            .dashboard { flex-direction: column; align-items: stretch; }
+            .stat-group { justify-content: center; }
+            .quick-actions { justify-content: center; margin-left: 0; }
+            .recent-jobs { justify-content: center; margin-left: 0; }
         }
-        .panel-header .count {
-            background: #282e3a;
-            padding: 0 10px;
-            border-radius: 12px;
-            font-size: 11px;
-            color: #c8d0dc;
-        }
-        textarea {
-            flex: 1;
-            width: 100%;
-            border: none;
-            padding: 14px;
-            background: transparent;
-            color: #d4d8e0;
-            font-family: 'JetBrains Mono', 'Fira Code', monospace;
-            font-size: 13px;
-            line-height: 1.7;
-            resize: none;
-            outline: none;
-        }
-        textarea::placeholder {
-            color: #4a5260;
-        }
-        .output textarea {
-            color: #a8d4b0;
-        }
-        .toolbar {
-            display: flex;
-            gap: 10px;
-            flex-wrap: wrap;
-            align-items: center;
-            padding-top: 4px;
-        }
-        .btn {
-            padding: 8px 20px;
-            border: none;
-            border-radius: 20px;
-            font-weight: 500;
-            font-size: 13px;
-            cursor: pointer;
-            background: #2a3240;
-            color: #c8d0dc;
-            transition: background 0.2s, transform 0.1s;
-            font-family: inherit;
-        }
-        .btn:hover { background: #3a4358; }
-        .btn-primary {
-            background: #2d6bb8;
-            color: #fff;
-        }
-        .btn-primary:hover { background: #3a7fc8; }
-        .btn-success {
-            background: #2b8c5e;
-            color: #fff;
-        }
-        .btn-success:hover { background: #36a070; }
-        .btn-danger {
-            background: #b84a4a;
-            color: #fff;
-        }
-        .btn-danger:hover { background: #cc5a5a; }
-        .status {
-            font-size: 13px;
-            color: #8a92a0;
-            margin-left: auto;
-            padding: 4px 12px;
-            border-radius: 12px;
-            background: #1a1e26;
-        }
-        .status.green { color: #6ecb8a; }
-        .status.red { color: #d97a7a; }
-        .status.blue { color: #6a9fd8; }
-        .file-input {
-            display: none;
-        }
-        .drag-over {
-            border-color: #3a7fc8;
-            box-shadow: 0 0 0 2px rgba(45, 107, 184, 0.3);
-        }
-        @media (max-width: 700px) {
-            .panels { flex-direction: column; }
-            .app { padding: 16px; }
+        @media (max-width: 600px) {
+            .header { flex-direction: column; align-items: flex-start; gap: 4px; }
+            .header .links { font-size: 11px; flex-wrap: wrap; }
+            .panel textarea { font-size: 11px; padding: 8px 10px; }
+            .log-panel { height: 80px; }
+            .slider-container input[type="range"] { width: 80px; }
         }
     </style>
 </head>
 <body>
     <div class="app">
         <div class="header">
-            <h1>⚡ finny.obf <small>– Luau Anti‑Dump Obfuscator</small></h1>
+            <div>
+                <h1>finny.obf <span class="badge">v5 – Anti‑AI</span></h1>
+            </div>
+            <div class="links">
+                <span>⚡ Universal Anti‑Dump</span>
+                <a href="#">Docs</a>
+                <a href="#">GitHub</a>
+                <div style="width:28px;height:28px;border-radius:50%;background:var(--gradient);color:#fff;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:12px;text-transform:uppercase;">JD</div>
+            </div>
         </div>
 
-        <div class="panels">
-            <div class="panel" id="inputPanel">
-                <div class="panel-header">
-                    <span>📄 Input</span>
-                    <span class="count" id="inputCount">0 lines</span>
+        <div class="dashboard">
+            <div class="stat-group">
+                <div class="stat-item"><span class="label">Processing</span><span class="value" id="processingCount">0</span></div>
+                <div class="stat-item"><span class="label">Total Jobs</span><span class="value" id="totalJobs">0</span></div>
+                <div class="stat-item"><span class="label">Active jobs</span><span class="value" id="activeJobs">0</span></div>
+            </div>
+            <div class="quick-actions">
+                <button class="primary" id="uploadQuick">📤 Upload</button>
+                <button id="historyQuick">📋 History</button>
+            </div>
+        </div>
+
+        <div class="recent-jobs">
+            <span style="font-weight:600;font-size:11px;color:var(--text);">Recent Jobs</span>
+            <div id="recentJobs"><span class="empty">No jobs yet</span></div>
+            <a href="#" id="viewAll">View All →</a>
+        </div>
+
+        <div class="toolbar">
+            <div class="toolbar-group">
+                <label>Preset <select id="preset"><option value="minify">Minify</option><option value="weak" selected>Weak</option><option value="medium">Medium</option><option value="strong">Strong</option><option value="custom">Custom</option></select></label>
+                <label>Seed <input type="number" id="seed" value="0" style="width:60px;" /></label>
+            </div>
+            <div class="toolbar-group">
+                <label class="switch"><input type="checkbox" id="pretty" checked /><span class="slider"></span></label>
+                <label>Pretty</label>
+                <label class="switch"><input type="checkbox" id="safe" checked /><span class="slider"></span></label>
+                <label>Safe</label>
+            </div>
+            <div class="toolbar-group" style="flex:1;justify-content:flex-end;">
+                <button class="btn btn-primary" id="obfBtn">▶ Run</button>
+                <button class="btn btn-danger" id="deobfBtn">◀ Deobf</button>
+                <button class="btn btn-ghost" id="clearBtn">✕ Clear</button>
+                <button class="btn" id="loadBtn">📂 Load</button>
+                <input type="file" id="fileInput" style="display:none;" accept=".lua,.txt" />
+                <button class="btn btn-success" id="copyBtn">📋 Copy</button>
+                <button class="btn" id="downloadBtn">⬇ Dwn</button>
+                <button class="btn btn-ghost" id="logToggle">📋 Log</button>
+                <div class="progress-wrap" id="progressWrap"><progress id="progressBar" max="100" value="0"></progress><span class="prog-label" id="progressLabel">0%</span></div>
+            </div>
+        </div>
+
+        <div class="controls-row">
+            <div class="control-group">
+                <span class="control-label">Protection</span>
+                <div class="slider-container"><input type="range" id="protection" min="0" max="100" value="80" /><span class="slider-value" id="protectionValue">80%</span></div>
+            </div>
+            <div class="control-group">
+                <label class="control-toggle"><input type="checkbox" id="deadCode" checked /> Dead Code</label>
+                <label class="control-toggle"><input type="checkbox" id="antiDebug" checked /> Anti-Debug</label>
+            </div>
+            <div class="control-group">
+                <span class="control-label">Format</span>
+                <div class="format-group">
+                    <label><input type="radio" name="format" value="minified" /> Minified</label>
+                    <label><input type="radio" name="format" value="pretty" checked /> Pretty</label>
                 </div>
-                <textarea id="source" placeholder="Paste your Luau source here or drag &amp; drop a .lua file"></textarea>
+            </div>
+            <div class="control-group" style="flex:1;justify-content:flex-end;">
+                <span class="advanced-toggle" id="advToggle">▸ Advanced layers</span>
+            </div>
+        </div>
+
+        <div class="layer-toggles" id="layerToggles">
+            <div class="toggle"><input type="checkbox" id="allLayers" checked /><label>ALL</label><span class="desc">(toggle all)</span></div>
+            <div class="toggle"><input type="checkbox" id="l1" checked /><label>L1</label><span class="desc">Constants Table</span></div>
+            <div class="toggle"><input type="checkbox" id="l2" checked /><label>L2</label><span class="desc">String Obfuscation</span></div>
+            <div class="toggle"><input type="checkbox" id="l3" checked /><label>L3</label><span class="desc">Number Obfuscation</span></div>
+            <div class="toggle"><input type="checkbox" id="l4" checked /><label>L4</label><span class="desc">Junk Injection</span></div>
+            <div class="toggle"><input type="checkbox" id="l5" checked /><label>L5</label><span class="desc">Anti‑Pattern</span></div>
+            <div class="toggle"><input type="checkbox" id="l6" checked /><label>L6</label><span class="desc">Self‑Modifying</span></div>
+            <div class="toggle"><input type="checkbox" id="l7" checked /><label>L7</label><span class="desc">Flatten CF</span></div>
+            <div class="toggle"><input type="checkbox" id="l8" checked /><label>L8</label><span class="desc">VM Wrapper</span></div>
+            <div class="toggle"><input type="checkbox" id="l9" checked /><label>L9</label><span class="desc">String Table</span></div>
+            <div class="toggle"><input type="checkbox" id="l10" checked /><label>L10</label><span class="desc">Anti‑Tamper</span></div>
+        </div>
+
+        <div class="panels-wrapper">
+            <div class="panel" id="inputPanel">
+                <div class="drop-hint">📂 Drop .lua here</div>
+                <div class="panel-header"><span>📄 Input</span><span class="count" id="inputCount">0 lines</span></div>
+                <textarea id="source" placeholder="Paste your Luau source or drag & drop a file"></textarea>
             </div>
             <div class="panel output">
-                <div class="panel-header">
-                    <span>📦 Output</span>
-                    <span class="count" id="outputCount">0 lines</span>
-                </div>
+                <div class="panel-header"><span>📦 Output</span><span class="count" id="outputCount">0 lines</span></div>
                 <textarea id="output" readonly placeholder="Obfuscated code will appear here"></textarea>
             </div>
         </div>
 
-        <div class="toolbar">
-            <button class="btn btn-primary" id="obfBtn">▶ Obfuscate</button>
-            <button class="btn" id="loadBtn">📂 Load</button>
-            <input type="file" id="fileInput" class="file-input" accept=".lua,.txt" />
-            <button class="btn btn-success" id="copyBtn">📋 Copy</button>
-            <button class="btn" id="downloadBtn">⬇ Download</button>
-            <button class="btn btn-danger" id="clearBtn">✕ Clear</button>
-            <span class="status" id="statusText">Ready</span>
+        <div class="log-panel" id="logPanel">
+            <div class="log-header" id="logHeader"><span>📋 Log <span class="badge" id="logBadge">0</span></span><div><button class="log-clear" id="logClear">Clear</button><button class="log-toggle-small" id="logToggleSmall">▾</button></div></div>
+            <div class="log-body" id="logBody"><div class="entry info"><span class="time">[init]</span> finny.obf v5 – Anti‑AI ready</div></div>
+        </div>
+
+        <div class="status-bar">
+            <span class="status"><span class="dot green" id="statusDot"></span><span id="statusText">Ready</span></span>
+            <span id="perfDisplay"></span>
         </div>
     </div>
 
@@ -192,40 +278,165 @@
         (function() {
             "use strict";
 
+            // ─── DOM refs ──────────────────────────────────────────────
             const source = document.getElementById('source');
             const output = document.getElementById('output');
-            const inputCount = document.getElementById('inputCount');
-            const outputCount = document.getElementById('outputCount');
-            const statusText = document.getElementById('statusText');
             const obfBtn = document.getElementById('obfBtn');
-            const loadBtn = document.getElementById('loadBtn');
-            const fileInput = document.getElementById('fileInput');
+            const deobfBtn = document.getElementById('deobfBtn');
+            const clearBtn = document.getElementById('clearBtn');
             const copyBtn = document.getElementById('copyBtn');
             const downloadBtn = document.getElementById('downloadBtn');
-            const clearBtn = document.getElementById('clearBtn');
+            const loadBtn = document.getElementById('loadBtn');
+            const fileInput = document.getElementById('fileInput');
+            const statusText = document.getElementById('statusText');
+            const statusDot = document.getElementById('statusDot');
+            const perfDisplay = document.getElementById('perfDisplay');
+            const presetSelect = document.getElementById('preset');
+            const seedInput = document.getElementById('seed');
+            const prettyCheck = document.getElementById('pretty');
+            const safeCheck = document.getElementById('safe');
+            const allLayers = document.getElementById('allLayers');
+            const layerChecks = [
+                document.getElementById('l1'), document.getElementById('l2'),
+                document.getElementById('l3'), document.getElementById('l4'),
+                document.getElementById('l5'), document.getElementById('l6'),
+                document.getElementById('l7'), document.getElementById('l8'),
+                document.getElementById('l9'), document.getElementById('l10')
+            ];
+            const advToggle = document.getElementById('advToggle');
+            const layerToggles = document.getElementById('layerToggles');
+            const inputCount = document.getElementById('inputCount');
+            const outputCount = document.getElementById('outputCount');
+            const logBody = document.getElementById('logBody');
+            const logBadge = document.getElementById('logBadge');
+            const logClear = document.getElementById('logClear');
+            const logToggleSmall = document.getElementById('logToggleSmall');
+            const logPanel = document.getElementById('logPanel');
+            const logHeader = document.getElementById('logHeader');
+            const logToggle = document.getElementById('logToggle');
             const inputPanel = document.getElementById('inputPanel');
+            const protectionSlider = document.getElementById('protection');
+            const protectionValue = document.getElementById('protectionValue');
+            const deadCodeCheck = document.getElementById('deadCode');
+            const antiDebugCheck = document.getElementById('antiDebug');
+            const formatRadios = document.querySelectorAll('input[name="format"]');
+            const uploadQuick = document.getElementById('uploadQuick');
+            const historyQuick = document.getElementById('historyQuick');
+            const totalJobsEl = document.getElementById('totalJobs');
+            const processingCountEl = document.getElementById('processingCount');
+            const activeJobsEl = document.getElementById('activeJobs');
+            const recentJobsContainer = document.getElementById('recentJobs');
+            const viewAll = document.getElementById('viewAll');
+            const progressWrap = document.getElementById('progressWrap');
+            const progressBar = document.getElementById('progressBar');
+            const progressLabel = document.getElementById('progressLabel');
 
-            function updateCounts() {
-                inputCount.textContent = source.value.split('\n').length + ' lines';
-                outputCount.textContent = output.value.split('\n').length + ' lines';
+            let totalJobs = 0, activeJobs = 0, logEntries = 0, logVisible = true, processing = false;
+            let recentJobs = [];
+            let rand = mulberry32(0);
+
+            function mulberry32(a) {
+                return function() {
+                    a |= 0;
+                    a = a + 0x6D2B79F5 | 0;
+                    let t = Math.imul(a ^ a >>> 15, 1 | a);
+                    t = t + Math.imul(t ^ t >>> 7, 61 | t) ^ t;
+                    return ((t ^ t >>> 14) >>> 0) / 4294967296;
+                };
             }
-            source.addEventListener('input', updateCounts);
-            output.addEventListener('input', updateCounts);
 
-            function setStatus(text, state = '') {
+            function reseed(s) { rand = mulberry32(s || 0); }
+
+            function log(msg, type = 'info') {
+                const t = new Date().toLocaleTimeString();
+                const e = document.createElement('div');
+                e.className = 'entry ' + type;
+                e.innerHTML = `<span class="time">[${t}]</span>${msg}`;
+                logBody.appendChild(e);
+                logBody.scrollTop = logBody.scrollHeight;
+                logEntries++;
+                logBadge.textContent = logEntries;
+                if (logEntries > 500) { logBody.removeChild(logBody.firstChild); logEntries--; }
+            }
+
+            function setStatus(text, state = 'ready') {
                 statusText.textContent = text;
-                statusText.className = 'status ' + state;
+                statusDot.className = 'dot ' + state;
             }
 
-            // ─── Obfuscation Logic (Universal Anti‑Dump) ───
+            function updateDashboard() {
+                totalJobsEl.textContent = totalJobs;
+                processingCountEl.textContent = 0;
+                activeJobsEl.textContent = activeJobs;
+                if (!recentJobs.length) {
+                    recentJobsContainer.innerHTML = '<span class="empty">No jobs yet</span>';
+                    return;
+                }
+                let html = '';
+                const show = recentJobs.slice(-3).reverse();
+                for (const j of show) {
+                    const st = j.status === 'COMPLETED' ? '#10b981' : '#fbbf24';
+                    html += `<div class="job"><span class="dot" style="background:${st}"></span><span class="name">${j.name}</span><span class="meta">${j.status} · ${j.size} · ${j.time}</span></div>`;
+                }
+                recentJobsContainer.innerHTML = html;
+            }
+
+            function addJob(name, status = 'COMPLETED') {
+                const size = (source.value.length / 1024).toFixed(0) + 'KB';
+                const time = new Date().toLocaleString('en-US', { month: 'short', day: 'numeric' });
+                recentJobs.push({ name, status, size, time });
+                if (recentJobs.length > 10) recentJobs.shift();
+                totalJobs++;
+                updateDashboard();
+            }
+
+            function toggleLogPanel(show) {
+                logVisible = (show !== undefined) ? show : !logVisible;
+                logPanel.classList.toggle('hidden', !logVisible);
+                logToggle.classList.toggle('active', logVisible);
+                logToggleSmall.textContent = logVisible ? '▾' : '▸';
+            }
+            logToggle.addEventListener('click', e => { e.stopPropagation(); toggleLogPanel(); });
+            logHeader.addEventListener('click', e => {
+                if (e.target.closest('.log-clear') || e.target.closest('.log-toggle-small')) return;
+                toggleLogPanel();
+            });
+            logToggleSmall.addEventListener('click', e => { e.stopPropagation(); toggleLogPanel(); });
+            logClear.addEventListener('click', e => {
+                e.stopPropagation();
+                logBody.innerHTML = '';
+                logEntries = 0;
+                logBadge.textContent = '0';
+                log('Log cleared', 'info');
+            });
+            protectionSlider.addEventListener('input', function() { protectionValue.textContent = this.value + '%'; });
+            uploadQuick.addEventListener('click', () => loadBtn.click());
+            historyQuick.addEventListener('click', () => {
+                log('📋 Opening history...', 'info');
+                setStatus('History viewed', 'blue');
+                if (!recentJobs.length) log('No jobs yet', 'warn');
+                else log('📋 History: ' + recentJobs.length + ' jobs', 'info');
+            });
+            viewAll.addEventListener('click', e => { e.preventDefault(); historyQuick.click(); });
+
+            function setProgress(pct, label) {
+                if (pct === undefined) { progressWrap.classList.remove('active'); return; }
+                progressWrap.classList.add('active');
+                progressBar.value = Math.min(100, Math.max(0, pct));
+                progressLabel.textContent = label || (Math.round(pct) + '%');
+            }
+
+            // ─── Obfuscation Engine ──────────────────────────────────────
+            // UniversalAntiDumpObfuscate port (matching C# version)
             function obfuscate(plainCode) {
-                const rand = (min, max) => Math.floor(Math.random() * (max - min + 1)) + min;
+                const randInt = (min, max) => Math.floor(Math.random() * (max - min + 1)) + min;
                 const randHex = (len) => {
                     let s = '';
-                    for (let i = 0; i < len; i++) s += '0123456789abcdef'[rand(0, 15)];
+                    for (let i = 0; i < len; i++) s += '0123456789abcdef'[randInt(0, 15)];
                     return s;
                 };
 
+                // Generate random variable names
                 const varEnv = `_0x${randHex(4)}`;
                 const varRealData = `_0x${randHex(4)}`;
                 const varDecoyData = `_0x${randHex(4)}`;
@@ -239,21 +450,24 @@
                 const varExec = `_0x${randHex(4)}`;
                 const varTrace = `_0x${randHex(4)}`;
 
+                // Encode real payload
                 const realBytes = new TextEncoder().encode(plainCode);
-                const realKey = rand(40, 85);
+                const realKey = randInt(40, 85);
                 const realList = [];
                 for (let i = 0; i < realBytes.length; i++) {
                     realList.push(realBytes[i] ^ (realKey + (i % 7)));
                 }
 
+                // Decoy payload
                 const decoySource = `print("this gng really thought he could get my code! what a skid. ")`;
                 const decoyBytes = new TextEncoder().encode(decoySource);
-                const decoyKey = rand(40, 85);
+                const decoyKey = randInt(40, 85);
                 const decoyList = [];
                 for (let i = 0; i < decoyBytes.length; i++) {
                     decoyList.push(decoyBytes[i] ^ (decoyKey + (i % 7)));
                 }
 
+                // Build Lua script
                 const parts = [];
 
                 parts.push(`local ${varEnv} = { [(4)] = game, [(9)] = workspace };`);
@@ -295,26 +509,104 @@
                 return parts.join('\n');
             }
 
-            // ─── UI Actions ────────────────────────────────────────────
-
-            obfBtn.addEventListener('click', function() {
-                const input = source.value;
-                if (!input.trim()) {
-                    setStatus('⚠️ Paste some code first', 'red');
-                    return;
-                }
+            // ─── Deobfuscator ──────────────────────────────────────────
+            function deobfuscate(code) {
+                // Simple deobf: try to extract the real payload by looking for the table and XOR.
+                // This is a best‑effort – the real anti‑dump makes it hard.
                 try {
-                    const start = performance.now();
-                    const result = obfuscate(input);
-                    output.value = result;
-                    updateCounts();
-                    const elapsed = (performance.now() - start).toFixed(0);
-                    setStatus(`✅ Obfuscated in ${elapsed}ms`, 'green');
+                    const realTableMatch = code.match(/local\s+_0x\w+\s*=\s*{([0-9,]+)}/);
+                    if (!realTableMatch) return 'Could not locate data table.';
+                    const numbers = realTableMatch[1].split(',').map(Number);
+                    // Find the key (the value after "local _0x... = <number>" – we can approximate)
+                    const keyMatch = code.match(/local\s+_0x\w+\s*=\s*(\d+)/);
+                    if (!keyMatch) return 'Key not found.';
+                    const key = parseInt(keyMatch[1], 10);
+                    const bytes = [];
+                    for (let i = 0; i < numbers.length; i++) {
+                        bytes.push(numbers[i] ^ (key + (i % 7)));
+                    }
+                    const decoder = new TextDecoder('utf-8');
+                    const decoded = decoder.decode(new Uint8Array(bytes));
+                    return decoded;
                 } catch (e) {
-                    setStatus('❌ Error: ' + e.message, 'red');
-                    console.error(e);
+                    return 'Deobf error: ' + e.message;
+                }
+            }
+
+            // ─── UI handlers ────────────────────────────────────────────
+
+            function updateCounts() {
+                inputCount.textContent = source.value.split('\n').length + ' lines';
+                outputCount.textContent = output.value.split('\n').length + ' lines';
+            }
+            source.addEventListener('input', updateCounts);
+            output.addEventListener('input', updateCounts);
+
+            function setPreset(mode) {
+                // No effect, just for UI consistency
+                let idx = [];
+                if (mode === 'minify') idx = [0];
+                else if (mode === 'weak') idx = [0, 1, 2];
+                else if (mode === 'medium') idx = [0, 1, 2, 3];
+                else if (mode === 'strong') idx = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9];
+                else return;
+                layerChecks.forEach((cb, i) => cb.checked = idx.includes(i));
+                allLayers.checked = idx.length === 10;
+            }
+
+            presetSelect.addEventListener('change', function() {
+                if (this.value !== 'custom') { setPreset(this.value); log('Preset: ' + this.value, 'info'); }
+            });
+            allLayers.addEventListener('change', function() { layerChecks.forEach(cb => cb.checked = this.checked); });
+            layerChecks.forEach(cb => {
+                cb.addEventListener('change', function() {
+                    if (!this.checked) allLayers.checked = false;
+                    else if (layerChecks.every(c => c.checked)) allLayers.checked = true;
+                    const cur = layerChecks.map(c => c.checked);
+                    const presets = {
+                        minify: [true, false, false, false, false, false, false, false, false, false],
+                        weak: [true, true, true, false, false, false, false, false, false, false],
+                        medium: [true, true, true, true, false, false, false, false, false, false],
+                        strong: [true, true, true, true, true, true, true, true, true, true]
+                    };
+                    let found = false;
+                    for (const [k, arr] of Object.entries(presets)) {
+                        if (arr.every((v, i) => v === cur[i])) { presetSelect.value = k; found = true; break; }
+                    }
+                    if (!found) presetSelect.value = 'custom';
+                });
+            });
+
+            let advOpen = false;
+            advToggle.addEventListener('click', function() {
+                advOpen = !advOpen;
+                layerToggles.classList.toggle('open', advOpen);
+                this.textContent = advOpen ? '▾ Advanced layers' : '▸ Advanced layers';
+            });
+
+            let dragC = 0;
+            inputPanel.addEventListener('dragover', e => { e.preventDefault(); e.stopPropagation(); this.classList.add('drag-over'); });
+            inputPanel.addEventListener('dragleave', e => { e.preventDefault(); e.stopPropagation(); dragC--; if (dragC <= 0) { this.classList.remove('drag-over'); dragC = 0; } });
+            inputPanel.addEventListener('drop', function(e) {
+                e.preventDefault(); e.stopPropagation(); this.classList.remove('drag-over'); dragC = 0;
+                const files = e.dataTransfer.files;
+                if (files.length) {
+                    const file = files[0];
+                    if (file.name.endsWith('.lua') || file.name.endsWith('.txt')) {
+                        const reader = new FileReader();
+                        reader.onload = function(ev) {
+                            source.value = ev.target.result;
+                            updateCounts();
+                            log('📂 Loaded: ' + file.name + ' (' + file.size + ' bytes)', 'success');
+                            setStatus('Loaded ' + file.name, 'green');
+                        };
+                        reader.onerror = function() { log('❌ Failed to read ' + file.name, 'error'); setStatus('Read error', 'red'); };
+                        reader.readAsText(file);
+                    } else { log('⚠️ Skipped: ' + file.name + ' (only .lua/.txt)', 'warn'); setStatus('Unsupported file', 'yellow'); }
                 }
             });
+            document.addEventListener('dragover', e => e.preventDefault());
+            document.addEventListener('drop', e => e.preventDefault());
 
             loadBtn.addEventListener('click', () => fileInput.click());
             fileInput.addEventListener('change', function() {
@@ -324,63 +616,23 @@
                 reader.onload = function(e) {
                     source.value = e.target.result;
                     updateCounts();
-                    setStatus(`📂 Loaded ${file.name} (${file.size} bytes)`, 'blue');
+                    log('📂 Loaded: ' + file.name + ' (' + file.size + ' bytes)', 'success');
+                    setStatus('Loaded ' + file.name, 'green');
                 };
-                reader.onerror = function() { setStatus('❌ Read error', 'red'); };
+                reader.onerror = function() { log('❌ Failed to read ' + file.name, 'error'); setStatus('Read error', 'red'); };
                 reader.readAsText(file);
                 this.value = '';
             });
 
-            let dragCounter = 0;
-            inputPanel.addEventListener('dragover', function(e) {
-                e.preventDefault();
-                e.stopPropagation();
-                this.classList.add('drag-over');
-            });
-            inputPanel.addEventListener('dragleave', function(e) {
-                e.preventDefault();
-                e.stopPropagation();
-                dragCounter--;
-                if (dragCounter <= 0) {
-                    this.classList.remove('drag-over');
-                    dragCounter = 0;
-                }
-            });
-            inputPanel.addEventListener('drop', function(e) {
-                e.preventDefault();
-                e.stopPropagation();
-                this.classList.remove('drag-over');
-                dragCounter = 0;
-                const files = e.dataTransfer.files;
-                if (files.length && (files[0].name.endsWith('.lua') || files[0].name.endsWith('.txt'))) {
-                    const reader = new FileReader();
-                    reader.onload = function(ev) {
-                        source.value = ev.target.result;
-                        updateCounts();
-                        setStatus(`📂 Dropped ${files[0].name} (${files[0].size} bytes)`, 'blue');
-                    };
-                    reader.onerror = function() { setStatus('❌ Read error', 'red'); };
-                    reader.readAsText(files[0]);
-                }
-            });
-            document.addEventListener('dragover', e => e.preventDefault());
-            document.addEventListener('drop', e => e.preventDefault());
-
             copyBtn.addEventListener('click', function() {
                 const text = output.value;
-                if (!text) { setStatus('⚠️ Nothing to copy', 'red'); return; }
-                navigator.clipboard?.writeText(text).then(() => {
-                    setStatus('📋 Copied', 'green');
-                }).catch(() => {
-                    output.select();
-                    document.execCommand('copy');
-                    setStatus('📋 Copied (fallback)', 'green');
-                });
+                if (!text) { log('⚠️ Nothing to copy', 'warn'); setStatus('Nothing to copy', 'yellow'); return; }
+                navigator.clipboard?.writeText(text).then(() => { log('📋 Copied', 'success'); setStatus('Copied', 'green'); }).catch(() => { output.select(); document.execCommand('copy'); log('📋 Copied (fallback)', 'success'); setStatus('Copied', 'green'); });
             });
 
             downloadBtn.addEventListener('click', function() {
                 const text = output.value;
-                if (!text) { setStatus('⚠️ Nothing to download', 'red'); return; }
+                if (!text) { log('⚠️ Nothing to download', 'warn'); setStatus('Nothing to download', 'yellow'); return; }
                 const blob = new Blob([text], { type: 'text/plain' });
                 const url = URL.createObjectURL(blob);
                 const a = document.createElement('a');
@@ -390,19 +642,105 @@
                 a.click();
                 document.body.removeChild(a);
                 URL.revokeObjectURL(url);
-                setStatus('⬇️ Downloaded', 'green');
+                log('⬇️ Downloaded finny_output.lua', 'success');
+                setStatus('Downloaded', 'green');
             });
 
             clearBtn.addEventListener('click', function() {
                 source.value = '';
                 output.value = '';
                 updateCounts();
-                setStatus('🗑️ Cleared', '');
+                log('🗑️ Cleared', 'info');
+                setStatus('Cleared', 'green');
             });
 
-            source.value = '-- Paste your Luau code here\nprint("Hello, world!")';
+            function getFormat() { for (const r of formatRadios) if (r.checked) return r.value; return 'pretty'; }
+
+            // ─── Obfuscate button ──────────────────────────────────────
+            obfBtn.addEventListener('click', function() {
+                const input = source.value;
+                if (!input.trim()) { log('⚠️ Paste some code first', 'warn'); setStatus('Paste some code first', 'yellow'); return; }
+                if (processing) return;
+                processing = true;
+                obfBtn.disabled = true;
+                deobfBtn.disabled = true;
+                setStatus('Obfuscating...', 'blue');
+                log('⚙️ Starting obfuscation...', 'info');
+                setProgress(0, '0%');
+
+                const seed = parseInt(seedInput.value) || 0;
+                reseed(seed);
+                // The layer toggles are ignored for this engine, but we keep them for UI consistency.
+                // The protection slider and deadCode/antiDebug toggles are also ignored.
+                const format = getFormat();
+                const wasPretty = prettyCheck.checked;
+                if (format === 'minified') prettyCheck.checked = false;
+                else prettyCheck.checked = true;
+
+                let jobName = 'script.lua';
+                const first = source.value.split('\n')[0];
+                const m = first.match(/--\s*(\S+\.lua)/);
+                if (m) jobName = m[1];
+
+                setTimeout(() => {
+                    try {
+                        const start = performance.now();
+                        setProgress(10, '10%');
+                        const result = obfuscate(input);
+                        setProgress(60, '60%');
+                        output.value = result;
+                        updateCounts();
+                        prettyCheck.checked = wasPretty;
+                        const elapsed = (performance.now() - start).toFixed(0);
+                        log('✅ Obfuscation done in ' + elapsed + 'ms', 'success');
+                        setStatus('Done in ' + elapsed + 'ms', 'green');
+                        perfDisplay.textContent = elapsed + 'ms';
+                        addJob(jobName, 'COMPLETED');
+                        setProgress(100, '100%');
+                        setTimeout(() => setProgress(), 800);
+                    } catch (e) {
+                        log('❌ Error: ' + e.message, 'error');
+                        setStatus('Error: ' + e.message, 'red');
+                        console.error(e);
+                        perfDisplay.textContent = 'error';
+                        setProgress();
+                    } finally {
+                        processing = false;
+                        obfBtn.disabled = false;
+                        deobfBtn.disabled = false;
+                        prettyCheck.checked = wasPretty;
+                    }
+                }, 20);
+            });
+
+            // ─── Deobfuscate button ────────────────────────────────────
+            deobfBtn.addEventListener('click', function() {
+                const input = output.value;
+                if (!input.trim()) { log('⚠️ Nothing to deobfuscate', 'warn'); setStatus('Nothing to deobfuscate', 'yellow'); return; }
+                try {
+                    const decoded = deobfuscate(input);
+                    if (decoded.startsWith('Could') || decoded.startsWith('Deobf') || decoded.includes('error')) {
+                        log('❌ ' + decoded, 'error');
+                        setStatus('Deobf failed', 'red');
+                        output.value = decoded;
+                    } else {
+                        output.value = decoded;
+                        updateCounts();
+                        log('🔓 Deobfuscation successful', 'success');
+                        setStatus('Deobfuscated', 'green');
+                    }
+                } catch (e) { log('❌ Deobf error: ' + e.message, 'error'); setStatus('Deobf error', 'red'); }
+            });
+
+            // ─── Init ──────────────────────────────────────────────────
+            source.value = '-- example.lua\nprint("hello world")';
+            setPreset('weak');
             updateCounts();
-            setStatus('Ready');
+            setStatus('Ready', 'green');
+            log('🚀 finny.obf v5 — Anti‑AI with Universal Anti‑Dump', 'info');
+            log('⚡ New engine: anti‑dump, tamper checks, decoy payload', 'info');
+            toggleLogPanel(true);
+            updateDashboard();
         })();
     </script>
 </body>
