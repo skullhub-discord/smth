@@ -1,747 +1,1940 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>finny.obf v5 – Anti‑AI</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Luau Obfuscator Pro - Anti-Tamper Edition</title>
     <style>
-        * { margin: 0; padding: 0; box-sizing: border-box; }
-        :root {
-            --bg: #f1f5f9; --surface: #ffffff; --border: #e2e8f0;
-            --text: #0f172a; --muted: #94a3b8; --accent: #3b82f6;
-            --accent2: #8b5cf6; --gradient: linear-gradient(135deg, #3b82f6, #8b5cf6);
-            --shadow: 0 4px 12px rgba(0,0,0,0.08); --radius: 10px;
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
         }
+
         body {
-            font-family: 'Inter', system-ui, -apple-system, sans-serif;
-            background: var(--bg);
-            display: flex;
-            justify-content: center;
-            align-items: center;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #0f0c29, #302b63, #24243e);
+            color: #fff;
             min-height: 100vh;
-            padding: 16px;
-            color: var(--text);
+            padding: 20px;
         }
-        .app {
-            max-width: 1480px;
-            width: 100%;
-            height: 98vh;
-            max-height: 1080px;
-            background: var(--surface);
-            border-radius: 16px;
-            box-shadow: var(--shadow);
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 20px;
+            padding: 30px;
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        h1 {
+            text-align: center;
+            font-size: 2.5em;
+            margin-bottom: 10px;
+            background: linear-gradient(45deg, #f093fb, #f5576c, #4facfe);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            text-shadow: 0 0 30px rgba(245, 87, 108, 0.3);
+        }
+
+        .subtitle {
+            text-align: center;
+            color: #aaa;
+            margin-bottom: 30px;
+            font-size: 1.1em;
+        }
+
+        .main-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+            margin-bottom: 20px;
+        }
+
+        @media (max-width: 768px) {
+            .main-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .panel {
+            background: rgba(0, 0, 0, 0.4);
+            border-radius: 15px;
+            padding: 20px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .panel-title {
+            font-size: 1.2em;
+            margin-bottom: 15px;
+            color: #4facfe;
             display: flex;
-            flex-direction: column;
-            padding: 16px 20px 12px;
-            border: 1px solid var(--border);
+            align-items: center;
+            gap: 10px;
+        }
+
+        .panel-title .icon {
+            font-size: 1.4em;
+        }
+
+        textarea {
+            width: 100%;
+            height: 400px;
+            background: rgba(0, 0, 0, 0.6);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 10px;
+            color: #e0e0e0;
+            padding: 15px;
+            font-family: 'Consolas', 'Monaco', monospace;
+            font-size: 14px;
+            resize: vertical;
+            transition: border-color 0.3s;
+        }
+
+        textarea:focus {
+            outline: none;
+            border-color: #4facfe;
+        }
+
+        .options-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+            gap: 15px;
+            margin: 20px 0;
+            padding: 15px;
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 10px;
+        }
+
+        .option-item {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 8px;
+            border-radius: 8px;
+            background: rgba(255, 255, 255, 0.05);
+            transition: background 0.3s;
+        }
+
+        .option-item:hover {
+            background: rgba(255, 255, 255, 0.1);
+        }
+
+        .option-item input[type="checkbox"] {
+            width: 18px;
+            height: 18px;
+            accent-color: #4facfe;
+            cursor: pointer;
+        }
+
+        .option-item label {
+            cursor: pointer;
+            font-size: 0.95em;
+            color: #ddd;
+        }
+
+        .option-item input[type="number"] {
+            background: rgba(0, 0, 0, 0.5);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 5px;
+            color: #fff;
+            padding: 4px 8px;
+            width: 60px;
+            font-size: 0.9em;
+        }
+
+        .button-group {
+            display: flex;
+            gap: 15px;
+            flex-wrap: wrap;
+            margin: 20px 0;
+        }
+
+        .btn {
+            padding: 12px 30px;
+            border: none;
+            border-radius: 10px;
+            font-size: 1em;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            flex: 1;
+            min-width: 150px;
+        }
+
+        .btn-primary {
+            background: linear-gradient(45deg, #4facfe, #00f2fe);
+            color: #fff;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 30px rgba(79, 172, 254, 0.3);
+        }
+
+        .btn-success {
+            background: linear-gradient(45deg, #43e97b, #38f9d7);
+            color: #1a1a1a;
+        }
+
+        .btn-success:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 30px rgba(67, 233, 123, 0.3);
+        }
+
+        .btn-danger {
+            background: linear-gradient(45deg, #f093fb, #f5576c);
+            color: #fff;
+        }
+
+        .btn-danger:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 30px rgba(245, 87, 108, 0.3);
+        }
+
+        .btn-secondary {
+            background: rgba(255, 255, 255, 0.1);
+            color: #fff;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .btn-secondary:hover {
+            background: rgba(255, 255, 255, 0.2);
+        }
+
+        .stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 15px;
+            margin: 20px 0;
+            padding: 15px;
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 10px;
+        }
+
+        .stat-item {
+            text-align: center;
+        }
+
+        .stat-value {
+            font-size: 1.5em;
+            font-weight: bold;
+            color: #4facfe;
+        }
+
+        .stat-label {
+            font-size: 0.85em;
+            color: #aaa;
+            margin-top: 5px;
+        }
+
+        .status {
+            padding: 10px 15px;
+            border-radius: 8px;
+            margin: 10px 0;
+            display: none;
+        }
+
+        .status.success {
+            display: block;
+            background: rgba(67, 233, 123, 0.2);
+            border: 1px solid rgba(67, 233, 123, 0.3);
+            color: #43e97b;
+        }
+
+        .status.error {
+            display: block;
+            background: rgba(245, 87, 108, 0.2);
+            border: 1px solid rgba(245, 87, 108, 0.3);
+            color: #f5576c;
+        }
+
+        .status.info {
+            display: block;
+            background: rgba(79, 172, 254, 0.2);
+            border: 1px solid rgba(79, 172, 254, 0.3);
+            color: #4facfe;
+        }
+
+        .variable-map {
+            max-height: 200px;
+            overflow-y: auto;
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 8px;
+            padding: 10px;
+            margin-top: 10px;
+            display: none;
+        }
+
+        .variable-map.show {
+            display: block;
+        }
+
+        .variable-entry {
+            display: flex;
+            justify-content: space-between;
+            padding: 4px 8px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+            font-family: monospace;
+            font-size: 0.85em;
+        }
+
+        .variable-original {
+            color: #aaa;
+        }
+
+        .variable-obfuscated {
+            color: #4facfe;
+        }
+
+        .footer {
+            text-align: center;
+            margin-top: 30px;
+            color: #666;
+            font-size: 0.9em;
+        }
+
+        .progress-bar {
+            width: 100%;
+            height: 4px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 2px;
+            margin: 10px 0;
             overflow: hidden;
+            display: none;
         }
-        ::-webkit-scrollbar { width: 5px; height: 5px; }
-        ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 999px; }
-        .header { display: flex; justify-content: space-between; align-items: center; flex-shrink: 0; margin-bottom: 12px; }
-        .header h1 { font-size: 22px; font-weight: 700; background: var(--gradient); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
-        .header .badge { background: var(--gradient); color: #fff; font-size: 10px; font-weight: 600; padding: 2px 12px; border-radius: 999px; margin-left: 10px; -webkit-text-fill-color: #fff; }
-        .header .links { display: flex; gap: 16px; font-size: 12px; color: var(--muted); align-items: center; }
-        .header .links a { color: var(--muted); text-decoration: none; border-bottom: 1px dotted transparent; }
-        .header .links a:hover { color: var(--text); border-color: var(--text); }
-        .dashboard { display: flex; flex-wrap: wrap; gap: 12px 20px; background: #f8fafc; padding: 10px 16px; border-radius: var(--radius); border: 1px solid var(--border); margin-bottom: 12px; flex-shrink: 0; align-items: center; }
-        .stat-group { display: flex; gap: 20px; flex-wrap: wrap; flex: 1; }
-        .stat-item .label { font-size: 10px; text-transform: uppercase; color: var(--muted); font-weight: 600; }
-        .stat-item .value { font-size: 20px; font-weight: 700; line-height: 1.2; }
-        .quick-actions { display: flex; gap: 8px; }
-        .quick-actions button { font-size: 11px; padding: 4px 14px; border: 1px solid var(--border); border-radius: 999px; background: #fff; cursor: pointer; transition: 0.2s; }
-        .quick-actions button.primary { background: var(--gradient); color: #fff; border-color: transparent; }
-        .quick-actions button:hover { background: #e2e8f0; }
-        .recent-jobs { display: flex; align-items: center; gap: 12px; font-size: 12px; color: var(--muted); margin-bottom: 10px; flex-shrink: 0; flex-wrap: wrap; }
-        .recent-jobs .job { background: #fff; border: 1px solid var(--border); border-radius: 999px; padding: 2px 12px 2px 6px; display: flex; align-items: center; gap: 6px; }
-        .recent-jobs .job .dot { width: 8px; height: 8px; border-radius: 50%; background: #10b981; }
-        .toolbar { display: flex; flex-wrap: wrap; gap: 6px 14px; background: #f8fafc; padding: 6px 14px; border-radius: var(--radius); border: 1px solid var(--border); margin-bottom: 10px; flex-shrink: 0; align-items: center; }
-        .toolbar-group { display: flex; align-items: center; gap: 6px 12px; flex-wrap: wrap; }
-        .toolbar-group:not(:last-child)::after { content: ''; width: 1px; height: 24px; background: var(--border); margin-left: 4px; }
-        .toolbar label { font-size: 11px; color: var(--muted); display: flex; align-items: center; gap: 4px; }
-        .toolbar select, .toolbar input[type="number"] { background: #fff; border: 1px solid var(--border); padding: 3px 8px; border-radius: 6px; font-size: 11px; height: 26px; }
-        .toolbar .switch { position: relative; width: 30px; height: 18px; display: inline-block; }
-        .toolbar .switch input { opacity: 0; width: 0; height: 0; }
-        .toolbar .slider { position: absolute; top: 0; left: 0; right: 0; bottom: 0; background: #cbd5e1; border-radius: 999px; transition: 0.25s; cursor: pointer; }
-        .toolbar .slider::before { content: ''; position: absolute; height: 12px; width: 12px; left: 3px; bottom: 3px; background: white; border-radius: 50%; transition: 0.25s; box-shadow: 0 1px 3px rgba(0,0,0,0.15); }
-        .toolbar .switch input:checked + .slider { background: var(--gradient); }
-        .toolbar .switch input:checked + .slider::before { transform: translateX(12px); }
-        .btn { padding: 4px 14px; border: none; border-radius: 999px; font-weight: 600; font-size: 11px; cursor: pointer; background: #e2e8f0; color: var(--text); transition: 0.2s; height: 28px; display: inline-flex; align-items: center; gap: 5px; }
-        .btn:hover { background: #cbd5e1; transform: translateY(-1px); }
-        .btn-primary { background: var(--gradient); color: #fff; }
-        .btn-primary:hover { box-shadow: 0 4px 12px rgba(59,130,246,0.3); }
-        .btn-success { background: #10b981; color: #fff; }
-        .btn-danger { background: #ef4444; color: #fff; }
-        .btn-ghost { background: transparent; color: var(--muted); }
-        .btn-ghost:hover { background: #f1f5f9; }
-        .btn:disabled { opacity: 0.4; cursor: not-allowed; transform: none !important; }
-        .controls-row { display: flex; flex-wrap: wrap; gap: 8px 16px; background: #f8fafc; padding: 6px 14px; border-radius: var(--radius); border: 1px solid var(--border); margin-bottom: 10px; flex-shrink: 0; align-items: center; }
-        .control-group { display: flex; align-items: center; gap: 6px 12px; flex-wrap: wrap; }
-        .control-group:not(:last-child)::after { content: ''; width: 1px; height: 24px; background: var(--border); margin-left: 4px; }
-        .control-label { font-size: 10px; font-weight: 600; text-transform: uppercase; color: var(--muted); }
-        .control-toggle { display: flex; align-items: center; gap: 5px; font-size: 11px; color: var(--text); cursor: pointer; }
-        .control-toggle input[type="checkbox"] { appearance: none; width: 14px; height: 14px; background: #fff; border: 1.5px solid var(--muted); border-radius: 3px; cursor: pointer; position: relative; transition: 0.2s; flex-shrink: 0; }
-        .control-toggle input:checked { background: var(--accent); border-color: var(--accent); }
-        .control-toggle input:checked::after { content: ''; position: absolute; top: 1px; left: 4px; width: 4px; height: 8px; border: solid white; border-width: 0 2px 2px 0; transform: rotate(45deg); }
-        .slider-container { display: flex; align-items: center; gap: 8px; }
-        .slider-container input[type="range"] { -webkit-appearance: none; width: 120px; height: 4px; border-radius: 2px; background: var(--border); outline: none; }
-        .slider-container input[type="range"]::-webkit-slider-thumb { -webkit-appearance: none; width: 14px; height: 14px; border-radius: 50%; background: var(--gradient); cursor: pointer; box-shadow: 0 2px 6px rgba(59,130,246,0.3); }
-        .slider-value { font-size: 13px; font-weight: 700; color: var(--accent); min-width: 36px; text-align: center; }
-        .format-group { display: flex; gap: 6px; }
-        .format-group label { font-size: 11px; color: var(--text); display: flex; align-items: center; gap: 4px; cursor: pointer; }
-        .format-group input[type="radio"] { appearance: none; width: 13px; height: 13px; border: 2px solid var(--muted); border-radius: 50%; cursor: pointer; position: relative; transition: 0.2s; }
-        .format-group input:checked { border-color: var(--accent); }
-        .format-group input:checked::after { content: ''; position: absolute; top: 1.5px; left: 1.5px; width: 6px; height: 6px; border-radius: 50%; background: var(--gradient); }
-        .advanced-toggle { font-size: 11px; color: var(--muted); cursor: pointer; padding: 2px 10px; border-radius: 999px; background: transparent; border: 1px solid transparent; transition: 0.2s; }
-        .advanced-toggle:hover { background: #f1f5f9; border-color: var(--border); }
-        .layer-toggles { display: none; flex-wrap: wrap; gap: 4px 14px; padding: 6px 12px; background: #f8fafc; border-radius: var(--radius); border: 1px solid var(--border); margin-top: 6px; }
-        .layer-toggles.open { display: flex; }
-        .layer-toggles .toggle { display: flex; align-items: center; gap: 4px; font-size: 11px; color: var(--text); cursor: default; }
-        .layer-toggles .toggle input[type="checkbox"] { appearance: none; width: 14px; height: 14px; background: #fff; border: 1.5px solid var(--muted); border-radius: 3px; cursor: pointer; position: relative; transition: 0.2s; }
-        .layer-toggles .toggle input:checked { background: var(--accent); border-color: var(--accent); }
-        .layer-toggles .toggle input:checked::after { content: ''; position: absolute; top: 1px; left: 4px; width: 4px; height: 8px; border: solid white; border-width: 0 2px 2px 0; transform: rotate(45deg); }
-        .layer-toggles .toggle .desc { font-size: 9px; color: var(--muted); margin-left: 2px; }
-        .panels-wrapper { display: flex; gap: 12px; flex: 1; min-height: 0; }
-        .panel { flex: 1; display: flex; flex-direction: column; background: #fff; border-radius: var(--radius); border: 1px solid var(--border); overflow: hidden; position: relative; }
-        .panel-header { padding: 6px 14px; background: #f8fafc; border-bottom: 1px solid var(--border); font-size: 10px; font-weight: 600; text-transform: uppercase; color: var(--muted); display: flex; justify-content: space-between; align-items: center; flex-shrink: 0; }
-        .panel-header .count { font-weight: 400; background: #fff; padding: 1px 8px; border-radius: 999px; border: 1px solid var(--border); }
-        .panel textarea { flex: 1; width: 100%; border: none; padding: 10px 14px; font-family: 'JetBrains Mono', monospace; font-size: 12.5px; line-height: 1.8; resize: none; outline: none; background: transparent; color: var(--text); }
-        .panel textarea::placeholder { color: var(--muted); font-family: 'Inter', sans-serif; }
-        .panel.output textarea { color: #065f46; }
-        .panel.drag-over { border-color: var(--accent); box-shadow: 0 0 0 3px rgba(59,130,246,0.15); }
-        .drop-hint { display: none; position: absolute; inset: 0; background: rgba(59,130,246,0.05); border-radius: var(--radius); align-items: center; justify-content: center; font-size: 14px; font-weight: 600; color: var(--accent); pointer-events: none; backdrop-filter: blur(2px); z-index: 2; }
-        .panel.drag-over .drop-hint { display: flex; }
-        .log-panel { flex-shrink: 0; height: 120px; background: #fff; border-radius: var(--radius); border: 1px solid var(--border); margin-top: 8px; overflow: hidden; display: flex; flex-direction: column; transition: height 0.3s, opacity 0.2s; }
-        .log-panel.hidden { height: 0; opacity: 0; margin-top: 0; border: none; pointer-events: none; }
-        .log-header { display: flex; justify-content: space-between; align-items: center; padding: 4px 14px; background: #f8fafc; border-bottom: 1px solid var(--border); flex-shrink: 0; cursor: pointer; user-select: none; }
-        .log-header span { font-size: 10px; font-weight: 600; text-transform: uppercase; color: var(--muted); display: flex; align-items: center; gap: 6px; }
-        .log-header .badge { background: var(--gradient); color: #fff; font-size: 9px; padding: 0 8px; border-radius: 999px; }
-        .log-body { flex: 1; overflow-y: auto; padding: 4px 14px; font-family: 'JetBrains Mono', monospace; font-size: 11.5px; line-height: 1.7; color: #1e293b; }
-        .log-body .entry { padding: 1px 0; border-bottom: 1px solid var(--border); opacity: 0.85; }
-        .log-body .entry.info { color: #2563eb; }
-        .log-body .entry.success { color: #059669; }
-        .log-body .entry.error { color: #dc2626; }
-        .log-body .entry.warn { color: #d97706; }
-        .log-body .entry .time { color: var(--muted); margin-right: 10px; font-size: 10px; opacity: 0.6; }
-        .log-clear { background: none; border: none; color: var(--muted); cursor: pointer; font-size: 10px; padding: 2px 8px; border-radius: 999px; }
-        .log-clear:hover { background: #f1f5f9; }
-        .log-toggle-small { background: none; border: none; color: var(--muted); cursor: pointer; font-size: 12px; padding: 0 4px; }
-        .log-toggle-small:hover { color: var(--text); }
-        .status-bar { display: flex; justify-content: space-between; align-items: center; margin-top: 6px; flex-shrink: 0; font-size: 11px; color: var(--muted); padding: 0 4px; }
-        .status-bar .status { display: flex; align-items: center; gap: 8px; font-weight: 500; color: var(--text); }
-        .status-bar .dot { width: 8px; height: 8px; border-radius: 50%; background: #94a3b8; }
-        .status-bar .dot.green { background: #10b981; }
-        .status-bar .dot.red { background: #ef4444; }
-        .status-bar .dot.yellow { background: #fbbf24; }
-        .status-bar .dot.blue { background: #3b82f6; }
-        .progress-wrap { display: none; align-items: center; gap: 10px; flex: 1; max-width: 300px; }
-        .progress-wrap.active { display: flex; }
-        .progress-wrap progress { flex: 1; height: 6px; border-radius: 3px; border: none; background: var(--border); color: var(--accent); }
-        .progress-wrap progress::-webkit-progress-bar { background: var(--border); border-radius: 3px; }
-        .progress-wrap progress::-webkit-progress-value { background: var(--gradient); border-radius: 3px; }
-        .progress-wrap .prog-label { font-size: 10px; font-weight: 600; color: var(--muted); min-width: 40px; text-align: right; }
-        @media (max-width: 1100px) {
-            .panels-wrapper { flex-direction: column; }
-            .controls-row { flex-direction: column; align-items: stretch; }
-            .control-group:not(:last-child)::after { display: none; }
-            .toolbar { flex-direction: column; align-items: stretch; }
-            .toolbar-group:not(:last-child)::after { display: none; }
-            .dashboard { flex-direction: column; align-items: stretch; }
-            .stat-group { justify-content: center; }
-            .quick-actions { justify-content: center; margin-left: 0; }
-            .recent-jobs { justify-content: center; margin-left: 0; }
+
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(45deg, #4facfe, #00f2fe);
+            width: 0%;
+            transition: width 0.5s;
         }
-        @media (max-width: 600px) {
-            .header { flex-direction: column; align-items: flex-start; gap: 4px; }
-            .header .links { font-size: 11px; flex-wrap: wrap; }
-            .panel textarea { font-size: 11px; padding: 8px 10px; }
-            .log-panel { height: 80px; }
-            .slider-container input[type="range"] { width: 80px; }
+
+        .progress-bar.active {
+            display: block;
+        }
+
+        .badge {
+            display: inline-block;
+            padding: 2px 10px;
+            border-radius: 12px;
+            font-size: 0.75em;
+            font-weight: 600;
+            background: rgba(79, 172, 254, 0.2);
+            color: #4facfe;
+            margin-left: 5px;
+        }
+
+        .security-level {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+        }
+
+        .security-dots {
+            display: flex;
+            gap: 5px;
+        }
+
+        .dot {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.2);
+            transition: all 0.3s;
+        }
+
+        .dot.active {
+            background: #4facfe;
+            box-shadow: 0 0 10px rgba(79, 172, 254, 0.5);
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+
+        .processing .btn-primary {
+            animation: pulse 1s infinite;
+        }
+
+        ::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 4px;
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: rgba(79, 172, 254, 0.5);
+            border-radius: 4px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: rgba(79, 172, 254, 0.7);
+        }
+
+        .copy-btn {
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            color: #fff;
+            padding: 5px 15px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 0.85em;
+            transition: all 0.3s;
+            float: right;
+        }
+
+        .copy-btn:hover {
+            background: rgba(255, 255, 255, 0.2);
         }
     </style>
 </head>
 <body>
-    <div class="app">
-        <div class="header">
-            <div>
-                <h1>finny.obf <span class="badge">v5 – Anti‑AI</span></h1>
+    <div class="container">
+        <h1>🔒 Luau Obfuscator Pro</h1>
+        <p class="subtitle">Advanced Anti-Tamper Protection & Code Obfuscation</p>
+
+        <div class="main-grid">
+            <div class="panel">
+                <div class="panel-title">
+                    <span class="icon">📝</span>
+                    Input Code
+                    <span class="badge">Luau</span>
+                </div>
+                <textarea id="inputCode" placeholder="Paste your Luau code here...">-- Example Luau code
+function add(a, b)
+    local result = a + b
+    return result
+end
+
+function main()
+    local x = 10
+    local y = 20
+    local z = add(x, y)
+    print("Result: " .. z)
+end
+
+main()</textarea>
             </div>
-            <div class="links">
-                <span>⚡ Universal Anti‑Dump</span>
-                <a href="#">Docs</a>
-                <a href="#">GitHub</a>
-                <div style="width:28px;height:28px;border-radius:50%;background:var(--gradient);color:#fff;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:12px;text-transform:uppercase;">JD</div>
+
+            <div class="panel">
+                <div class="panel-title">
+                    <span class="icon">🔐</span>
+                    Obfuscated Output
+                    <button class="copy-btn" onclick="copyOutput()">📋 Copy</button>
+                </div>
+                <textarea id="outputCode" placeholder="Obfuscated code will appear here..." readonly></textarea>
             </div>
         </div>
 
-        <div class="dashboard">
-            <div class="stat-group">
-                <div class="stat-item"><span class="label">Processing</span><span class="value" id="processingCount">0</span></div>
-                <div class="stat-item"><span class="label">Total Jobs</span><span class="value" id="totalJobs">0</span></div>
-                <div class="stat-item"><span class="label">Active jobs</span><span class="value" id="activeJobs">0</span></div>
+        <div class="panel">
+            <div class="panel-title">
+                <span class="icon">⚙️</span>
+                Obfuscation Options
             </div>
-            <div class="quick-actions">
-                <button class="primary" id="uploadQuick">📤 Upload</button>
-                <button id="historyQuick">📋 History</button>
-            </div>
-        </div>
-
-        <div class="recent-jobs">
-            <span style="font-weight:600;font-size:11px;color:var(--text);">Recent Jobs</span>
-            <div id="recentJobs"><span class="empty">No jobs yet</span></div>
-            <a href="#" id="viewAll">View All →</a>
-        </div>
-
-        <div class="toolbar">
-            <div class="toolbar-group">
-                <label>Preset <select id="preset"><option value="minify">Minify</option><option value="weak" selected>Weak</option><option value="medium">Medium</option><option value="strong">Strong</option><option value="custom">Custom</option></select></label>
-                <label>Seed <input type="number" id="seed" value="0" style="width:60px;" /></label>
-            </div>
-            <div class="toolbar-group">
-                <label class="switch"><input type="checkbox" id="pretty" checked /><span class="slider"></span></label>
-                <label>Pretty</label>
-                <label class="switch"><input type="checkbox" id="safe" checked /><span class="slider"></span></label>
-                <label>Safe</label>
-            </div>
-            <div class="toolbar-group" style="flex:1;justify-content:flex-end;">
-                <button class="btn btn-primary" id="obfBtn">▶ Run</button>
-                <button class="btn btn-danger" id="deobfBtn">◀ Deobf</button>
-                <button class="btn btn-ghost" id="clearBtn">✕ Clear</button>
-                <button class="btn" id="loadBtn">📂 Load</button>
-                <input type="file" id="fileInput" style="display:none;" accept=".lua,.txt" />
-                <button class="btn btn-success" id="copyBtn">📋 Copy</button>
-                <button class="btn" id="downloadBtn">⬇ Dwn</button>
-                <button class="btn btn-ghost" id="logToggle">📋 Log</button>
-                <div class="progress-wrap" id="progressWrap"><progress id="progressBar" max="100" value="0"></progress><span class="prog-label" id="progressLabel">0%</span></div>
-            </div>
-        </div>
-
-        <div class="controls-row">
-            <div class="control-group">
-                <span class="control-label">Protection</span>
-                <div class="slider-container"><input type="range" id="protection" min="0" max="100" value="80" /><span class="slider-value" id="protectionValue">80%</span></div>
-            </div>
-            <div class="control-group">
-                <label class="control-toggle"><input type="checkbox" id="deadCode" checked /> Dead Code</label>
-                <label class="control-toggle"><input type="checkbox" id="antiDebug" checked /> Anti-Debug</label>
-            </div>
-            <div class="control-group">
-                <span class="control-label">Format</span>
-                <div class="format-group">
-                    <label><input type="radio" name="format" value="minified" /> Minified</label>
-                    <label><input type="radio" name="format" value="pretty" checked /> Pretty</label>
+            
+            <div class="options-grid">
+                <div class="option-item">
+                    <input type="checkbox" id="antiTamper" checked>
+                    <label for="antiTamper">Anti-Tamper</label>
+                </div>
+                <div class="option-item">
+                    <input type="checkbox" id="encryptStrings" checked>
+                    <label for="encryptStrings">String Encryption</label>
+                </div>
+                <div class="option-item">
+                    <input type="checkbox" id="controlFlow" checked>
+                    <label for="controlFlow">Control Flow Obfuscation</label>
+                </div>
+                <div class="option-item">
+                    <input type="checkbox" id="deadCode" checked>
+                    <label for="deadCode">Dead Code Injection</label>
+                </div>
+                <div class="option-item">
+                    <input type="checkbox" id="minify" checked>
+                    <label for="minify">Minify</label>
+                </div>
+                <div class="option-item">
+                    <input type="checkbox" id="unicodeNames">
+                    <label for="unicodeNames">Unicode Names</label>
+                </div>
+                <div class="option-item">
+                    <label for="nameLength">Name Length:</label>
+                    <input type="number" id="nameLength" value="8" min="3" max="20">
+                </div>
+                <div class="option-item">
+                    <label for="securityLevel">Security Level:</label>
+                    <div class="security-level">
+                        <input type="range" id="securityLevel" min="1" max="5" value="3" step="1">
+                        <span id="securityLabel">3</span>
+                    </div>
                 </div>
             </div>
-            <div class="control-group" style="flex:1;justify-content:flex-end;">
-                <span class="advanced-toggle" id="advToggle">▸ Advanced layers</span>
+
+            <div class="button-group">
+                <button class="btn btn-primary" onclick="obfuscate()">🚀 Obfuscate</button>
+                <button class="btn btn-success" onclick="loadExample()">📂 Load Example</button>
+                <button class="btn btn-danger" onclick="clearAll()">🗑️ Clear All</button>
+                <button class="btn btn-secondary" onclick="downloadOutput()">💾 Download</button>
+            </div>
+
+            <div class="progress-bar" id="progressBar">
+                <div class="progress-fill" id="progressFill"></div>
+            </div>
+
+            <div class="status" id="status"></div>
+        </div>
+
+        <div class="stats">
+            <div class="stat-item">
+                <div class="stat-value" id="originalSize">0</div>
+                <div class="stat-label">Original Size (bytes)</div>
+            </div>
+            <div class="stat-item">
+                <div class="stat-value" id="obfuscatedSize">0</div>
+                <div class="stat-label">Obfuscated Size (bytes)</div>
+            </div>
+            <div class="stat-item">
+                <div class="stat-value" id="sizeRatio">0%</div>
+                <div class="stat-label">Size Ratio</div>
+            </div>
+            <div class="stat-item">
+                <div class="stat-value" id="variablesCount">0</div>
+                <div class="stat-label">Variables Obfuscated</div>
             </div>
         </div>
 
-        <div class="layer-toggles" id="layerToggles">
-            <div class="toggle"><input type="checkbox" id="allLayers" checked /><label>ALL</label><span class="desc">(toggle all)</span></div>
-            <div class="toggle"><input type="checkbox" id="l1" checked /><label>L1</label><span class="desc">Constants Table</span></div>
-            <div class="toggle"><input type="checkbox" id="l2" checked /><label>L2</label><span class="desc">String Obfuscation</span></div>
-            <div class="toggle"><input type="checkbox" id="l3" checked /><label>L3</label><span class="desc">Number Obfuscation</span></div>
-            <div class="toggle"><input type="checkbox" id="l4" checked /><label>L4</label><span class="desc">Junk Injection</span></div>
-            <div class="toggle"><input type="checkbox" id="l5" checked /><label>L5</label><span class="desc">Anti‑Pattern</span></div>
-            <div class="toggle"><input type="checkbox" id="l6" checked /><label>L6</label><span class="desc">Self‑Modifying</span></div>
-            <div class="toggle"><input type="checkbox" id="l7" checked /><label>L7</label><span class="desc">Flatten CF</span></div>
-            <div class="toggle"><input type="checkbox" id="l8" checked /><label>L8</label><span class="desc">VM Wrapper</span></div>
-            <div class="toggle"><input type="checkbox" id="l9" checked /><label>L9</label><span class="desc">String Table</span></div>
-            <div class="toggle"><input type="checkbox" id="l10" checked /><label>L10</label><span class="desc">Anti‑Tamper</span></div>
-        </div>
-
-        <div class="panels-wrapper">
-            <div class="panel" id="inputPanel">
-                <div class="drop-hint">📂 Drop .lua here</div>
-                <div class="panel-header"><span>📄 Input</span><span class="count" id="inputCount">0 lines</span></div>
-                <textarea id="source" placeholder="Paste your Luau source or drag & drop a file"></textarea>
+        <div class="panel" id="variablePanel" style="display:none;">
+            <div class="panel-title">
+                <span class="icon">📋</span>
+                Variable Mapping
             </div>
-            <div class="panel output">
-                <div class="panel-header"><span>📦 Output</span><span class="count" id="outputCount">0 lines</span></div>
-                <textarea id="output" readonly placeholder="Obfuscated code will appear here"></textarea>
-            </div>
+            <div class="variable-map show" id="variableMap"></div>
         </div>
 
-        <div class="log-panel" id="logPanel">
-            <div class="log-header" id="logHeader"><span>📋 Log <span class="badge" id="logBadge">0</span></span><div><button class="log-clear" id="logClear">Clear</button><button class="log-toggle-small" id="logToggleSmall">▾</button></div></div>
-            <div class="log-body" id="logBody"><div class="entry info"><span class="time">[init]</span> finny.obf v5 – Anti‑AI ready</div></div>
-        </div>
-
-        <div class="status-bar">
-            <span class="status"><span class="dot green" id="statusDot"></span><span id="statusText">Ready</span></span>
-            <span id="perfDisplay"></span>
+        <div class="footer">
+            <p>⚠️ For educational purposes only. Use responsibly.</p>
+            <p style="margin-top:5px;">Built with ❤️ | Luau Obfuscator Pro v2.0</p>
         </div>
     </div>
 
     <script>
-        (function() {
-            "use strict";
+        // ========================================
+        // LUAU OBFUSCATOR - Full JavaScript Implementation
+        // ========================================
 
-            // ─── DOM refs ──────────────────────────────────────────────
-            const source = document.getElementById('source');
-            const output = document.getElementById('output');
-            const obfBtn = document.getElementById('obfBtn');
-            const deobfBtn = document.getElementById('deobfBtn');
-            const clearBtn = document.getElementById('clearBtn');
-            const copyBtn = document.getElementById('copyBtn');
-            const downloadBtn = document.getElementById('downloadBtn');
-            const loadBtn = document.getElementById('loadBtn');
-            const fileInput = document.getElementById('fileInput');
-            const statusText = document.getElementById('statusText');
-            const statusDot = document.getElementById('statusDot');
-            const perfDisplay = document.getElementById('perfDisplay');
-            const presetSelect = document.getElementById('preset');
-            const seedInput = document.getElementById('seed');
-            const prettyCheck = document.getElementById('pretty');
-            const safeCheck = document.getElementById('safe');
-            const allLayers = document.getElementById('allLayers');
-            const layerChecks = [
-                document.getElementById('l1'), document.getElementById('l2'),
-                document.getElementById('l3'), document.getElementById('l4'),
-                document.getElementById('l5'), document.getElementById('l6'),
-                document.getElementById('l7'), document.getElementById('l8'),
-                document.getElementById('l9'), document.getElementById('l10')
-            ];
-            const advToggle = document.getElementById('advToggle');
-            const layerToggles = document.getElementById('layerToggles');
-            const inputCount = document.getElementById('inputCount');
-            const outputCount = document.getElementById('outputCount');
-            const logBody = document.getElementById('logBody');
-            const logBadge = document.getElementById('logBadge');
-            const logClear = document.getElementById('logClear');
-            const logToggleSmall = document.getElementById('logToggleSmall');
-            const logPanel = document.getElementById('logPanel');
-            const logHeader = document.getElementById('logHeader');
-            const logToggle = document.getElementById('logToggle');
-            const inputPanel = document.getElementById('inputPanel');
-            const protectionSlider = document.getElementById('protection');
-            const protectionValue = document.getElementById('protectionValue');
-            const deadCodeCheck = document.getElementById('deadCode');
-            const antiDebugCheck = document.getElementById('antiDebug');
-            const formatRadios = document.querySelectorAll('input[name="format"]');
-            const uploadQuick = document.getElementById('uploadQuick');
-            const historyQuick = document.getElementById('historyQuick');
-            const totalJobsEl = document.getElementById('totalJobs');
-            const processingCountEl = document.getElementById('processingCount');
-            const activeJobsEl = document.getElementById('activeJobs');
-            const recentJobsContainer = document.getElementById('recentJobs');
-            const viewAll = document.getElementById('viewAll');
-            const progressWrap = document.getElementById('progressWrap');
-            const progressBar = document.getElementById('progressBar');
-            const progressLabel = document.getElementById('progressLabel');
-
-            let totalJobs = 0, activeJobs = 0, logEntries = 0, logVisible = true, processing = false;
-            let recentJobs = [];
-            let rand = mulberry32(0);
-
-            function mulberry32(a) {
-                return function() {
-                    a |= 0;
-                    a = a + 0x6D2B79F5 | 0;
-                    let t = Math.imul(a ^ a >>> 15, 1 | a);
-                    t = t + Math.imul(t ^ t >>> 7, 61 | t) ^ t;
-                    return ((t ^ t >>> 14) >>> 0) / 4294967296;
-                };
+        class LuauObfuscator {
+            constructor() {
+                this.random = Math.random;
+                this.variableMap = new Map();
+                this.stringPool = [];
+                this.checksumKey = '';
+                this.tokens = [];
+                this.current = 0;
             }
 
-            function reseed(s) { rand = mulberry32(s || 0); }
-
-            function log(msg, type = 'info') {
-                const t = new Date().toLocaleTimeString();
-                const e = document.createElement('div');
-                e.className = 'entry ' + type;
-                e.innerHTML = `<span class="time">[${t}]</span>${msg}`;
-                logBody.appendChild(e);
-                logBody.scrollTop = logBody.scrollHeight;
-                logEntries++;
-                logBadge.textContent = logEntries;
-                if (logEntries > 500) { logBody.removeChild(logBody.firstChild); logEntries--; }
-            }
-
-            function setStatus(text, state = 'ready') {
-                statusText.textContent = text;
-                statusDot.className = 'dot ' + state;
-            }
-
-            function updateDashboard() {
-                totalJobsEl.textContent = totalJobs;
-                processingCountEl.textContent = 0;
-                activeJobsEl.textContent = activeJobs;
-                if (!recentJobs.length) {
-                    recentJobsContainer.innerHTML = '<span class="empty">No jobs yet</span>';
-                    return;
-                }
-                let html = '';
-                const show = recentJobs.slice(-3).reverse();
-                for (const j of show) {
-                    const st = j.status === 'COMPLETED' ? '#10b981' : '#fbbf24';
-                    html += `<div class="job"><span class="dot" style="background:${st}"></span><span class="name">${j.name}</span><span class="meta">${j.status} · ${j.size} · ${j.time}</span></div>`;
-                }
-                recentJobsContainer.innerHTML = html;
-            }
-
-            function addJob(name, status = 'COMPLETED') {
-                const size = (source.value.length / 1024).toFixed(0) + 'KB';
-                const time = new Date().toLocaleString('en-US', { month: 'short', day: 'numeric' });
-                recentJobs.push({ name, status, size, time });
-                if (recentJobs.length > 10) recentJobs.shift();
-                totalJobs++;
-                updateDashboard();
-            }
-
-            function toggleLogPanel(show) {
-                logVisible = (show !== undefined) ? show : !logVisible;
-                logPanel.classList.toggle('hidden', !logVisible);
-                logToggle.classList.toggle('active', logVisible);
-                logToggleSmall.textContent = logVisible ? '▾' : '▸';
-            }
-            logToggle.addEventListener('click', e => { e.stopPropagation(); toggleLogPanel(); });
-            logHeader.addEventListener('click', e => {
-                if (e.target.closest('.log-clear') || e.target.closest('.log-toggle-small')) return;
-                toggleLogPanel();
-            });
-            logToggleSmall.addEventListener('click', e => { e.stopPropagation(); toggleLogPanel(); });
-            logClear.addEventListener('click', e => {
-                e.stopPropagation();
-                logBody.innerHTML = '';
-                logEntries = 0;
-                logBadge.textContent = '0';
-                log('Log cleared', 'info');
-            });
-            protectionSlider.addEventListener('input', function() { protectionValue.textContent = this.value + '%'; });
-            uploadQuick.addEventListener('click', () => loadBtn.click());
-            historyQuick.addEventListener('click', () => {
-                log('📋 Opening history...', 'info');
-                setStatus('History viewed', 'blue');
-                if (!recentJobs.length) log('No jobs yet', 'warn');
-                else log('📋 History: ' + recentJobs.length + ' jobs', 'info');
-            });
-            viewAll.addEventListener('click', e => { e.preventDefault(); historyQuick.click(); });
-
-            function setProgress(pct, label) {
-                if (pct === undefined) { progressWrap.classList.remove('active'); return; }
-                progressWrap.classList.add('active');
-                progressBar.value = Math.min(100, Math.max(0, pct));
-                progressLabel.textContent = label || (Math.round(pct) + '%');
-            }
-
-            // ─── Obfuscation Engine ──────────────────────────────────────
-            // UniversalAntiDumpObfuscate port (matching C# version)
-            function obfuscate(plainCode) {
-                const randInt = (min, max) => Math.floor(Math.random() * (max - min + 1)) + min;
-                const randHex = (len) => {
-                    let s = '';
-                    for (let i = 0; i < len; i++) s += '0123456789abcdef'[randInt(0, 15)];
-                    return s;
+            // Main obfuscation method
+            obfuscate(sourceCode, options = {}) {
+                const defaultOptions = {
+                    enableAntiTamper: true,
+                    encryptStrings: true,
+                    obfuscateControlFlow: true,
+                    insertDeadCode: true,
+                    minify: true,
+                    useUnicodeNames: false,
+                    nameLength: 8,
+                    securityLevel: 3
                 };
 
-                // Generate random variable names
-                const varEnv = `_0x${randHex(4)}`;
-                const varRealData = `_0x${randHex(4)}`;
-                const varDecoyData = `_0x${randHex(4)}`;
-                const varLoader = `_0x${randHex(4)}`;
-                const varTamper = `_0x${randHex(4)}`;
-                const varActive = `_0x${randHex(4)}`;
-                const varKey = `_0x${randHex(4)}`;
-                const varChars = `_0x${randHex(4)}`;
-                const varDecrypt = `_0x${randHex(4)}`;
-                const varPayload = `_0x${randHex(4)}`;
-                const varExec = `_0x${randHex(4)}`;
-                const varTrace = `_0x${randHex(4)}`;
+                options = { ...defaultOptions, ...options };
+                this.checksumKey = this.generateChecksumKey();
 
-                // Encode real payload
-                const realBytes = new TextEncoder().encode(plainCode);
-                const realKey = randInt(40, 85);
-                const realList = [];
-                for (let i = 0; i < realBytes.length; i++) {
-                    realList.push(realBytes[i] ^ (realKey + (i % 7)));
-                }
-
-                // Decoy payload
-                const decoySource = `print("this gng really thought he could get my code! what a skid. ")`;
-                const decoyBytes = new TextEncoder().encode(decoySource);
-                const decoyKey = randInt(40, 85);
-                const decoyList = [];
-                for (let i = 0; i < decoyBytes.length; i++) {
-                    decoyList.push(decoyBytes[i] ^ (decoyKey + (i % 7)));
-                }
-
-                // Build Lua script
-                const parts = [];
-
-                parts.push(`local ${varEnv} = { [(4)] = game, [(9)] = workspace };`);
-                parts.push(`local ${varRealData} = {${realList.join(',')}};`);
-                parts.push(`local ${varDecoyData} = {${decoyList.join(',')}};`);
-
-                parts.push(`local _p1 = 'load'; local _p2 = 'str'; local _p3 = 'ing';`);
-                parts.push(`local ${varLoader} = getfenv()[_p1 .. _p2 .. _p3];`);
-
-                parts.push(`local ${varTamper} = false;`);
-                parts.push(`local ${varTrace} = debug.info and debug.info(1, 's') or '';`);
-                parts.push(`if ${varTrace} == '=(string)' or string.find(${varTrace}, 'dump') or string.find(${varTrace}, 'chunk') then`);
-                parts.push(`  ${varTamper} = true;`);
-                parts.push(`end;`);
-                parts.push(`if debug.info and debug.info(${varLoader}, 's') ~= '[C]' then`);
-                parts.push(`  ${varTamper} = true;`);
-                parts.push(`end;`);
-                parts.push(`if getfenv() == nil or getmetatable(getfenv()) ~= nil then`);
-                parts.push(`  ${varTamper} = true;`);
-                parts.push(`end;`);
-
-                parts.push(`local ${varActive} = ${varRealData};`);
-                parts.push(`local ${varKey} = ${realKey};`);
-                parts.push(`if ${varTamper} then`);
-                parts.push(`  ${varActive} = ${varDecoyData};`);
-                parts.push(`  ${varKey} = ${decoyKey};`);
-                parts.push(`end;`);
-
-                parts.push(`local ${varChars} = {};`);
-                parts.push(`for i = 1, #${varActive} do`);
-                parts.push(`  local ${varDecrypt} = bit32.bxor(${varActive}[i], ${varKey} + ((i - 1) % 7));`);
-                parts.push(`  ${varChars}[i] = string.char(${varDecrypt});`);
-                parts.push(`end;`);
-
-                parts.push(`local ${varPayload} = table.concat(${varChars});`);
-                parts.push(`local ${varExec} = ${varLoader}(${varPayload});`);
-                parts.push(`${varExec}();`);
-
-                return parts.join('\n');
-            }
-
-            // ─── Deobfuscator ──────────────────────────────────────────
-            function deobfuscate(code) {
-                // Simple deobf: try to extract the real payload by looking for the table and XOR.
-                // This is a best‑effort – the real anti‑dump makes it hard.
                 try {
-                    const realTableMatch = code.match(/local\s+_0x\w+\s*=\s*{([0-9,]+)}/);
-                    if (!realTableMatch) return 'Could not locate data table.';
-                    const numbers = realTableMatch[1].split(',').map(Number);
-                    // Find the key (the value after "local _0x... = <number>" – we can approximate)
-                    const keyMatch = code.match(/local\s+_0x\w+\s*=\s*(\d+)/);
-                    if (!keyMatch) return 'Key not found.';
-                    const key = parseInt(keyMatch[1], 10);
-                    const bytes = [];
-                    for (let i = 0; i < numbers.length; i++) {
-                        bytes.push(numbers[i] ^ (key + (i % 7)));
+                    // Step 1: Tokenize
+                    const tokens = this.tokenize(sourceCode);
+                    this.tokens = tokens;
+
+                    // Step 2: Parse AST
+                    const ast = this.parseAST(tokens);
+
+                    // Step 3: Collect identifiers
+                    const identifiers = this.collectIdentifiers(ast);
+
+                    // Step 4: Generate obfuscated names
+                    this.generateObfuscatedNames(identifiers, options);
+
+                    // Step 5: Obfuscate the code
+                    let obfuscatedCode = this.obfuscateAST(ast, options);
+
+                    // Step 6: Add anti-tamper
+                    if (options.enableAntiTamper) {
+                        obfuscatedCode = this.addAntiTamper(obfuscatedCode);
                     }
-                    const decoder = new TextDecoder('utf-8');
-                    const decoded = decoder.decode(new Uint8Array(bytes));
-                    return decoded;
-                } catch (e) {
-                    return 'Deobf error: ' + e.message;
-                }
-            }
 
-            // ─── UI handlers ────────────────────────────────────────────
+                    // Step 7: Encrypt strings
+                    if (options.encryptStrings) {
+                        obfuscatedCode = this.encryptStrings(obfuscatedCode);
+                    }
 
-            function updateCounts() {
-                inputCount.textContent = source.value.split('\n').length + ' lines';
-                outputCount.textContent = output.value.split('\n').length + ' lines';
-            }
-            source.addEventListener('input', updateCounts);
-            output.addEventListener('input', updateCounts);
+                    // Step 8: Control flow obfuscation
+                    if (options.obfuscateControlFlow) {
+                        obfuscatedCode = this.obfuscateControlFlow(obfuscatedCode);
+                    }
 
-            function setPreset(mode) {
-                // No effect, just for UI consistency
-                let idx = [];
-                if (mode === 'minify') idx = [0];
-                else if (mode === 'weak') idx = [0, 1, 2];
-                else if (mode === 'medium') idx = [0, 1, 2, 3];
-                else if (mode === 'strong') idx = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9];
-                else return;
-                layerChecks.forEach((cb, i) => cb.checked = idx.includes(i));
-                allLayers.checked = idx.length === 10;
-            }
+                    // Step 9: Dead code insertion
+                    if (options.insertDeadCode) {
+                        obfuscatedCode = this.insertDeadCode(obfuscatedCode);
+                    }
 
-            presetSelect.addEventListener('change', function() {
-                if (this.value !== 'custom') { setPreset(this.value); log('Preset: ' + this.value, 'info'); }
-            });
-            allLayers.addEventListener('change', function() { layerChecks.forEach(cb => cb.checked = this.checked); });
-            layerChecks.forEach(cb => {
-                cb.addEventListener('change', function() {
-                    if (!this.checked) allLayers.checked = false;
-                    else if (layerChecks.every(c => c.checked)) allLayers.checked = true;
-                    const cur = layerChecks.map(c => c.checked);
-                    const presets = {
-                        minify: [true, false, false, false, false, false, false, false, false, false],
-                        weak: [true, true, true, false, false, false, false, false, false, false],
-                        medium: [true, true, true, true, false, false, false, false, false, false],
-                        strong: [true, true, true, true, true, true, true, true, true, true]
+                    // Step 10: Minify
+                    if (options.minify) {
+                        obfuscatedCode = this.minify(obfuscatedCode);
+                    }
+
+                    // Step 11: Package
+                    obfuscatedCode = this.packageObfuscatedCode(obfuscatedCode);
+
+                    return {
+                        obfuscatedCode: obfuscatedCode,
+                        originalSize: sourceCode.length,
+                        obfuscatedSize: obfuscatedCode.length,
+                        variableMap: Object.fromEntries(this.variableMap),
+                        success: true
                     };
-                    let found = false;
-                    for (const [k, arr] of Object.entries(presets)) {
-                        if (arr.every((v, i) => v === cur[i])) { presetSelect.value = k; found = true; break; }
-                    }
-                    if (!found) presetSelect.value = 'custom';
-                });
-            });
-
-            let advOpen = false;
-            advToggle.addEventListener('click', function() {
-                advOpen = !advOpen;
-                layerToggles.classList.toggle('open', advOpen);
-                this.textContent = advOpen ? '▾ Advanced layers' : '▸ Advanced layers';
-            });
-
-            let dragC = 0;
-            inputPanel.addEventListener('dragover', e => { e.preventDefault(); e.stopPropagation(); this.classList.add('drag-over'); });
-            inputPanel.addEventListener('dragleave', e => { e.preventDefault(); e.stopPropagation(); dragC--; if (dragC <= 0) { this.classList.remove('drag-over'); dragC = 0; } });
-            inputPanel.addEventListener('drop', function(e) {
-                e.preventDefault(); e.stopPropagation(); this.classList.remove('drag-over'); dragC = 0;
-                const files = e.dataTransfer.files;
-                if (files.length) {
-                    const file = files[0];
-                    if (file.name.endsWith('.lua') || file.name.endsWith('.txt')) {
-                        const reader = new FileReader();
-                        reader.onload = function(ev) {
-                            source.value = ev.target.result;
-                            updateCounts();
-                            log('📂 Loaded: ' + file.name + ' (' + file.size + ' bytes)', 'success');
-                            setStatus('Loaded ' + file.name, 'green');
-                        };
-                        reader.onerror = function() { log('❌ Failed to read ' + file.name, 'error'); setStatus('Read error', 'red'); };
-                        reader.readAsText(file);
-                    } else { log('⚠️ Skipped: ' + file.name + ' (only .lua/.txt)', 'warn'); setStatus('Unsupported file', 'yellow'); }
+                } catch (error) {
+                    return {
+                        success: false,
+                        error: error.message
+                    };
                 }
-            });
-            document.addEventListener('dragover', e => e.preventDefault());
-            document.addEventListener('drop', e => e.preventDefault());
+            }
 
-            loadBtn.addEventListener('click', () => fileInput.click());
-            fileInput.addEventListener('change', function() {
-                const file = this.files[0];
-                if (!file) return;
-                const reader = new FileReader();
-                reader.onload = function(e) {
-                    source.value = e.target.result;
-                    updateCounts();
-                    log('📂 Loaded: ' + file.name + ' (' + file.size + ' bytes)', 'success');
-                    setStatus('Loaded ' + file.name, 'green');
-                };
-                reader.onerror = function() { log('❌ Failed to read ' + file.name, 'error'); setStatus('Read error', 'red'); };
-                reader.readAsText(file);
-                this.value = '';
-            });
+            // Tokenizer
+            tokenize(sourceCode) {
+                const tokens = [];
+                let current = 0;
 
-            copyBtn.addEventListener('click', function() {
-                const text = output.value;
-                if (!text) { log('⚠️ Nothing to copy', 'warn'); setStatus('Nothing to copy', 'yellow'); return; }
-                navigator.clipboard?.writeText(text).then(() => { log('📋 Copied', 'success'); setStatus('Copied', 'green'); }).catch(() => { output.select(); document.execCommand('copy'); log('📋 Copied (fallback)', 'success'); setStatus('Copied', 'green'); });
-            });
+                while (current < sourceCode.length) {
+                    // Skip whitespace
+                    if (/\s/.test(sourceCode[current])) {
+                        current++;
+                        continue;
+                    }
 
-            downloadBtn.addEventListener('click', function() {
-                const text = output.value;
-                if (!text) { log('⚠️ Nothing to download', 'warn'); setStatus('Nothing to download', 'yellow'); return; }
-                const blob = new Blob([text], { type: 'text/plain' });
+                    // Skip single-line comments
+                    if (sourceCode[current] === '-' && current + 1 < sourceCode.length && sourceCode[current + 1] === '-') {
+                        while (current < sourceCode.length && sourceCode[current] !== '\n') current++;
+                        continue;
+                    }
+
+                    // Skip multi-line comments
+                    if (sourceCode[current] === '-' && current + 2 < sourceCode.length &&
+                        sourceCode[current + 1] === '-' && sourceCode[current + 2] === '[') {
+                        while (current < sourceCode.length && !(sourceCode[current] === ']' &&
+                                current + 2 < sourceCode.length && sourceCode[current + 1] === ']' &&
+                                sourceCode[current + 2] === '-')) {
+                            current++;
+                        }
+                        current += 3;
+                        continue;
+                    }
+
+                    // Strings
+                    if (sourceCode[current] === '"' || sourceCode[current] === "'") {
+                        const quoteChar = sourceCode[current];
+                        const start = current;
+                        current++;
+                        while (current < sourceCode.length && sourceCode[current] !== quoteChar) {
+                            if (sourceCode[current] === '\\') current++;
+                            current++;
+                        }
+                        if (current < sourceCode.length) current++;
+                        tokens.push(sourceCode.substring(start, current));
+                        continue;
+                    }
+
+                    // Identifiers and keywords
+                    if (/[a-zA-Z_]/.test(sourceCode[current])) {
+                        const start = current;
+                        while (current < sourceCode.length && /[a-zA-Z0-9_]/.test(sourceCode[current])) current++;
+                        tokens.push(sourceCode.substring(start, current));
+                        continue;
+                    }
+
+                    // Numbers
+                    if (/[0-9]/.test(sourceCode[current])) {
+                        const start = current;
+                        while (current < sourceCode.length && /[0-9.]/.test(sourceCode[current])) current++;
+                        tokens.push(sourceCode.substring(start, current));
+                        continue;
+                    }
+
+                    // Operators and punctuation
+                    if (current + 1 < sourceCode.length) {
+                        const twoChar = sourceCode.substring(current, current + 2);
+                        if (['==', '~=', '<=', '>=', '..', '--'].includes(twoChar)) {
+                            tokens.push(twoChar);
+                            current += 2;
+                            continue;
+                        }
+                    }
+
+                    tokens.push(sourceCode[current]);
+                    current++;
+                }
+
+                return tokens;
+            }
+
+            // Simple AST Parser
+            parseAST(tokens) {
+                const root = { type: 'root', children: [], tokensConsumed: 0 };
+                let current = 0;
+
+                while (current < tokens.length) {
+                    const token = tokens[current];
+
+                    if (this.isKeyword(token, 'function')) {
+                        const funcNode = this.parseFunction(tokens, current);
+                        root.children.push(funcNode.node);
+                        current = funcNode.consumed;
+                    } else if (this.isKeyword(token, 'local')) {
+                        const localNode = this.parseLocalDeclaration(tokens, current);
+                        root.children.push(localNode.node);
+                        current = localNode.consumed;
+                    } else if (this.isKeyword(token, 'if')) {
+                        const ifNode = this.parseIfStatement(tokens, current);
+                        root.children.push(ifNode.node);
+                        current = ifNode.consumed;
+                    } else if (this.isKeyword(token, 'for')) {
+                        const forNode = this.parseForStatement(tokens, current);
+                        root.children.push(forNode.node);
+                        current = forNode.consumed;
+                    } else if (this.isKeyword(token, 'while')) {
+                        const whileNode = this.parseWhileStatement(tokens, current);
+                        root.children.push(whileNode.node);
+                        current = whileNode.consumed;
+                    } else if (this.isKeyword(token, 'repeat')) {
+                        const repeatNode = this.parseRepeatStatement(tokens, current);
+                        root.children.push(repeatNode.node);
+                        current = repeatNode.consumed;
+                    } else if (this.isKeyword(token, 'return')) {
+                        const returnNode = this.parseReturnStatement(tokens, current);
+                        root.children.push(returnNode.node);
+                        current = returnNode.consumed;
+                    } else if (this.isKeyword(token, 'break')) {
+                        root.children.push({ type: 'break', value: token });
+                        current++;
+                    } else if (this.isKeyword(token, 'end')) {
+                        current++;
+                        break;
+                    } else {
+                        // Expression
+                        const exprNode = this.parseExpression(tokens, current);
+                        if (exprNode.node) {
+                            root.children.push(exprNode.node);
+                            current = exprNode.consumed;
+                        } else {
+                            current++;
+                        }
+                    }
+                }
+
+                root.tokensConsumed = current;
+                return root;
+            }
+
+            parseFunction(tokens, current) {
+                const funcNode = { type: 'function', children: [] };
+                current++; // Skip 'function'
+
+                // Function name
+                if (current < tokens.length && this.isIdentifier(tokens[current])) {
+                    funcNode.value = tokens[current];
+                    current++;
+                }
+
+                // Parameters
+                if (current < tokens.length && tokens[current] === '(') {
+                    current++; // Skip '('
+                    const paramsNode = { type: 'parameters', children: [] };
+
+                    while (current < tokens.length && tokens[current] !== ')') {
+                        if (this.isIdentifier(tokens[current])) {
+                            paramsNode.children.push({ type: 'parameter', value: tokens[current] });
+                            current++;
+                            if (current < tokens.length && tokens[current] === ',') current++;
+                        } else {
+                            current++;
+                        }
+                    }
+
+                    if (current < tokens.length && tokens[current] === ')') current++;
+                    funcNode.children.push(paramsNode);
+                }
+
+                // Function body
+                if (current < tokens.length && tokens[current] === '{') {
+                    current++;
+                    const bodyNode = { type: 'block', children: [] };
+
+                    while (current < tokens.length && tokens[current] !== '}') {
+                        const parsed = this.parseAST(tokens.slice(current));
+                        if (parsed.children.length > 0) {
+                            bodyNode.children.push(...parsed.children);
+                            current += parsed.tokensConsumed;
+                        } else {
+                            current++;
+                        }
+                    }
+
+                    if (current < tokens.length && tokens[current] === '}') current++;
+                    funcNode.children.push(bodyNode);
+                }
+
+                return { node: funcNode, consumed: current };
+            }
+
+            parseLocalDeclaration(tokens, current) {
+                const localNode = { type: 'local', children: [] };
+                current++; // Skip 'local'
+
+                if (current < tokens.length && this.isIdentifier(tokens[current])) {
+                    localNode.value = tokens[current];
+                    current++;
+
+                    if (current < tokens.length && tokens[current] === '=') {
+                        current++;
+                        const exprNode = this.parseExpression(tokens, current);
+                        if (exprNode.node) {
+                            localNode.children.push(exprNode.node);
+                            current = exprNode.consumed;
+                        }
+                    }
+                }
+
+                return { node: localNode, consumed: current };
+            }
+
+            parseIfStatement(tokens, current) {
+                const ifNode = { type: 'if', children: [] };
+                current++; // Skip 'if'
+
+                // Condition
+                const conditionNode = this.parseExpression(tokens, current);
+                if (conditionNode.node) {
+                    ifNode.children.push(conditionNode.node);
+                    current = conditionNode.consumed;
+                }
+
+                // Then block
+                if (current < tokens.length && this.isKeyword(tokens[current], 'then')) {
+                    current++;
+                    const thenBlock = { type: 'block', children: [] };
+
+                    while (current < tokens.length && !this.isKeyword(tokens[current], 'end') &&
+                        !this.isKeyword(tokens[current], 'else') && !this.isKeyword(tokens[current], 'elseif')) {
+                        const parsed = this.parseAST(tokens.slice(current));
+                        if (parsed.children.length > 0) {
+                            thenBlock.children.push(...parsed.children);
+                            current += parsed.tokensConsumed;
+                        } else {
+                            current++;
+                        }
+                    }
+                    ifNode.children.push(thenBlock);
+                }
+
+                // Elseif blocks
+                while (current < tokens.length && this.isKeyword(tokens[current], 'elseif')) {
+                    const elseifNode = { type: 'elseif', children: [] };
+                    current++; // Skip 'elseif'
+
+                    const elseifCondition = this.parseExpression(tokens, current);
+                    if (elseifCondition.node) {
+                        elseifNode.children.push(elseifCondition.node);
+                        current = elseifCondition.consumed;
+                    }
+
+                    if (current < tokens.length && this.isKeyword(tokens[current], 'then')) {
+                        current++;
+                        const elseifBlock = { type: 'block', children: [] };
+
+                        while (current < tokens.length && !this.isKeyword(tokens[current], 'end') &&
+                            !this.isKeyword(tokens[current], 'else') && !this.isKeyword(tokens[current], 'elseif')) {
+                            const parsed = this.parseAST(tokens.slice(current));
+                            if (parsed.children.length > 0) {
+                                elseifBlock.children.push(...parsed.children);
+                                current += parsed.tokensConsumed;
+                            } else {
+                                current++;
+                            }
+                        }
+                        elseifNode.children.push(elseifBlock);
+                    }
+                    ifNode.children.push(elseifNode);
+                }
+
+                // Else block
+                if (current < tokens.length && this.isKeyword(tokens[current], 'else')) {
+                    current++;
+                    const elseBlock = { type: 'block', children: [] };
+
+                    while (current < tokens.length && !this.isKeyword(tokens[current], 'end')) {
+                        const parsed = this.parseAST(tokens.slice(current));
+                        if (parsed.children.length > 0) {
+                            elseBlock.children.push(...parsed.children);
+                            current += parsed.tokensConsumed;
+                        } else {
+                            current++;
+                        }
+                    }
+                    ifNode.children.push(elseBlock);
+                }
+
+                // End
+                if (current < tokens.length && this.isKeyword(tokens[current], 'end')) current++;
+
+                return { node: ifNode, consumed: current };
+            }
+
+            parseForStatement(tokens, current) {
+                const forNode = { type: 'for', children: [] };
+                current++; // Skip 'for'
+
+                if (current < tokens.length && this.isIdentifier(tokens[current])) {
+                    forNode.value = tokens[current];
+                    current++;
+                }
+
+                if (current < tokens.length && tokens[current] === '=') {
+                    current++;
+                    const startNode = this.parseExpression(tokens, current);
+                    if (startNode.node) {
+                        forNode.children.push(startNode.node);
+                        current = startNode.consumed;
+                    }
+
+                    if (current < tokens.length && tokens[current] === ',') {
+                        current++;
+                        const endNode = this.parseExpression(tokens, current);
+                        if (endNode.node) {
+                            forNode.children.push(endNode.node);
+                            current = endNode.consumed;
+                        }
+
+                        if (current < tokens.length && tokens[current] === ',') {
+                            current++;
+                            const stepNode = this.parseExpression(tokens, current);
+                            if (stepNode.node) {
+                                forNode.children.push(stepNode.node);
+                                current = stepNode.consumed;
+                            }
+                        }
+                    }
+                }
+
+                if (current < tokens.length && this.isKeyword(tokens[current], 'do')) {
+                    current++;
+                    const blockNode = { type: 'block', children: [] };
+
+                    while (current < tokens.length && !this.isKeyword(tokens[current], 'end')) {
+                        const parsed = this.parseAST(tokens.slice(current));
+                        if (parsed.children.length > 0) {
+                            blockNode.children.push(...parsed.children);
+                            current += parsed.tokensConsumed;
+                        } else {
+                            current++;
+                        }
+                    }
+
+                    if (current < tokens.length && this.isKeyword(tokens[current], 'end')) current++;
+                    forNode.children.push(blockNode);
+                }
+
+                return { node: forNode, consumed: current };
+            }
+
+            parseWhileStatement(tokens, current) {
+                const whileNode = { type: 'while', children: [] };
+                current++; // Skip 'while'
+
+                const conditionNode = this.parseExpression(tokens, current);
+                if (conditionNode.node) {
+                    whileNode.children.push(conditionNode.node);
+                    current = conditionNode.consumed;
+                }
+
+                if (current < tokens.length && this.isKeyword(tokens[current], 'do')) {
+                    current++;
+                    const blockNode = { type: 'block', children: [] };
+
+                    while (current < tokens.length && !this.isKeyword(tokens[current], 'end')) {
+                        const parsed = this.parseAST(tokens.slice(current));
+                        if (parsed.children.length > 0) {
+                            blockNode.children.push(...parsed.children);
+                            current += parsed.tokensConsumed;
+                        } else {
+                            current++;
+                        }
+                    }
+
+                    if (current < tokens.length && this.isKeyword(tokens[current], 'end')) current++;
+                    whileNode.children.push(blockNode);
+                }
+
+                return { node: whileNode, consumed: current };
+            }
+
+            parseRepeatStatement(tokens, current) {
+                const repeatNode = { type: 'repeat', children: [] };
+                current++; // Skip 'repeat'
+
+                const blockNode = { type: 'block', children: [] };
+
+                while (current < tokens.length && !this.isKeyword(tokens[current], 'until')) {
+                    const parsed = this.parseAST(tokens.slice(current));
+                    if (parsed.children.length > 0) {
+                        blockNode.children.push(...parsed.children);
+                        current += parsed.tokensConsumed;
+                    } else {
+                        current++;
+                    }
+                }
+                repeatNode.children.push(blockNode);
+
+                if (current < tokens.length && this.isKeyword(tokens[current], 'until')) {
+                    current++;
+                    const conditionNode = this.parseExpression(tokens, current);
+                    if (conditionNode.node) {
+                        repeatNode.children.push(conditionNode.node);
+                        current = conditionNode.consumed;
+                    }
+                }
+
+                return { node: repeatNode, consumed: current };
+            }
+
+            parseReturnStatement(tokens, current) {
+                const returnNode = { type: 'return', children: [] };
+                current++; // Skip 'return'
+
+                const exprNode = this.parseExpression(tokens, current);
+                if (exprNode.node) {
+                    returnNode.children.push(exprNode.node);
+                    current = exprNode.consumed;
+                }
+
+                return { node: returnNode, consumed: current };
+            }
+
+            parseExpression(tokens, current) {
+                if (current >= tokens.length) return { node: null, consumed: current };
+
+                const exprNode = { type: 'expression', children: [] };
+
+                if (this.isIdentifier(tokens[current]) || tokens[current] === 'self' || tokens[current] === 'super') {
+                    exprNode.value = tokens[current];
+                    current++;
+                } else if (tokens[current] === '(') {
+                    current++;
+                    const subExpr = this.parseExpression(tokens, current);
+                    if (subExpr.node) {
+                        exprNode.children.push(subExpr.node);
+                        current = subExpr.consumed;
+                    }
+                    if (current < tokens.length && tokens[current] === ')') current++;
+                } else if (this.isNumeric(tokens[current]) || this.isString(tokens[current])) {
+                    exprNode.value = tokens[current];
+                    current++;
+                } else if (this.isKeyword(tokens[current]) && ['true', 'false', 'nil'].includes(tokens[current])) {
+                    exprNode.value = tokens[current];
+                    current++;
+                } else {
+                    return { node: null, consumed: current };
+                }
+
+                // Handle operators
+                while (current < tokens.length && this.isOperator(tokens[current])) {
+                    const opNode = { type: 'operator', value: tokens[current], children: [] };
+                    current++;
+
+                    const rightNode = this.parseExpression(tokens, current);
+                    if (rightNode.node) {
+                        opNode.children.push(exprNode);
+                        opNode.children.push(rightNode.node);
+                        current = rightNode.consumed;
+                        return { node: opNode, consumed: current };
+                    }
+                }
+
+                // Handle function calls
+                if (current < tokens.length && tokens[current] === '(') {
+                    const callNode = { type: 'call', children: [] };
+                    callNode.value = exprNode.value;
+                    current++; // Skip '('
+
+                    while (current < tokens.length && tokens[current] !== ')') {
+                        const argNode = this.parseExpression(tokens, current);
+                        if (argNode.node) {
+                            callNode.children.push(argNode.node);
+                            current = argNode.consumed;
+                        }
+                        if (current < tokens.length && tokens[current] === ',') current++;
+                    }
+
+                    if (current < tokens.length && tokens[current] === ')') current++;
+                    return { node: callNode, consumed: current };
+                }
+
+                // Handle indexing
+                if (current < tokens.length && tokens[current] === '[') {
+                    const indexNode = { type: 'index', children: [] };
+                    indexNode.value = exprNode.value;
+                    current++; // Skip '['
+
+                    const indexExpr = this.parseExpression(tokens, current);
+                    if (indexExpr.node) {
+                        indexNode.children.push(indexExpr.node);
+                        current = indexExpr.consumed;
+                    }
+
+                    if (current < tokens.length && tokens[current] === ']') current++;
+                    return { node: indexNode, consumed: current };
+                }
+
+                if (current < tokens.length && tokens[current] === '.') {
+                    current++;
+                    if (current < tokens.length && this.isIdentifier(tokens[current])) {
+                        const dotNode = { type: 'dot', children: [] };
+                        dotNode.value = tokens[current];
+                        current++;
+                        dotNode.children.push(exprNode);
+                        return { node: dotNode, consumed: current };
+                    }
+                }
+
+                return { node: exprNode, consumed: current };
+            }
+
+            // Collect identifiers
+            collectIdentifiers(node) {
+                const identifiers = new Set();
+                this.collectIdentifiersRecursive(node, identifiers);
+                return identifiers;
+            }
+
+            collectIdentifiersRecursive(node, identifiers) {
+                if (!node) return;
+
+                if (['parameter', 'local', 'function', 'variable'].includes(node.type)) {
+                    if (node.value && !this.isKeyword(node.value)) {
+                        identifiers.add(node.value);
+                    }
+                }
+
+                if (node.children) {
+                    for (const child of node.children) {
+                        this.collectIdentifiersRecursive(child, identifiers);
+                    }
+                }
+            }
+
+            // Generate obfuscated names
+            generateObfuscatedNames(identifiers, options) {
+                const reservedKeywords = new Set([
+                    'and', 'break', 'do', 'else', 'elseif', 'end', 'false', 'for', 'function',
+                    'if', 'in', 'local', 'nil', 'not', 'or', 'repeat', 'return', 'then', 'true',
+                    'until', 'while', 'self', 'super'
+                ]);
+
+                for (const identifier of identifiers) {
+                    if (reservedKeywords.has(identifier)) continue;
+
+                    let obfuscatedName;
+                    if (options.useUnicodeNames) {
+                        obfuscatedName = this.generateUnicodeName();
+                    } else {
+                        obfuscatedName = this.generateRandomName(options.nameLength);
+                    }
+
+                    this.variableMap.set(identifier, obfuscatedName);
+                }
+            }
+
+            generateRandomName(length) {
+                const chars = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ_';
+                const digits = '0123456789';
+
+                let name = chars[Math.floor(this.random() * chars.length)];
+
+                for (let i = 1; i < length; i++) {
+                    const source = this.random() < 0.5 ? chars : digits;
+                    name += source[Math.floor(this.random() * source.length)];
+                }
+
+                return name;
+            }
+
+            generateUnicodeName() {
+                let name = '';
+                for (let i = 0; i < 8; i++) {
+                    const codePoint = 0x4E00 + Math.floor(this.random() * 0x4FFF);
+                    name += String.fromCharCode(codePoint);
+                }
+                return name;
+            }
+
+            // Obfuscate AST
+            obfuscateAST(node, options) {
+                let output = '';
+                this.obfuscateASTRecursive(node, output, 0, options);
+                return output;
+            }
+
+            obfuscateASTRecursive(node, output, indent, options) {
+                if (!node) return '';
+
+                let result = '';
+
+                switch (node.type) {
+                    case 'root':
+                        for (const child of node.children) {
+                            result += this.obfuscateASTRecursive(child, output, indent, options) + '; ';
+                        }
+                        break;
+
+                    case 'function':
+                        result += 'function ';
+                        if (node.value && this.variableMap.has(node.value)) {
+                            result += this.variableMap.get(node.value);
+                        } else if (node.value) {
+                            result += node.value;
+                        }
+
+                        for (const child of node.children) {
+                            result += this.obfuscateASTRecursive(child, output, indent, options);
+                        }
+                        result += ' end';
+                        break;
+
+                    case 'parameters':
+                        result += '(';
+                        const paramNames = [];
+                        for (const param of node.children) {
+                            if (this.variableMap.has(param.value)) {
+                                paramNames.push(this.variableMap.get(param.value));
+                            } else {
+                                paramNames.push(param.value);
+                            }
+                        }
+                        result += paramNames.join(', ');
+                        result += ')';
+                        break;
+
+                    case 'local':
+                        result += 'local ';
+                        if (this.variableMap.has(node.value)) {
+                            result += this.variableMap.get(node.value);
+                        } else {
+                            result += node.value;
+                        }
+
+                        if (node.children.length > 0) {
+                            result += ' = ';
+                            for (const child of node.children) {
+                                result += this.obfuscateASTRecursive(child, output, indent, options);
+                            }
+                        }
+                        break;
+
+                    case 'if':
+                        result += 'if ';
+                        if (node.children.length > 0) {
+                            result += this.obfuscateASTRecursive(node.children[0], output, indent, options);
+                        }
+                        result += ' then ';
+
+                        if (node.children.length > 1) {
+                            result += this.obfuscateASTRecursive(node.children[1], output, indent + 1, options);
+                        }
+
+                        for (let i = 2; i < node.children.length; i++) {
+                            result += this.obfuscateASTRecursive(node.children[i], output, indent, options);
+                        }
+
+                        result += ' end';
+                        break;
+
+                    case 'block':
+                        result += '\n' + ' '.repeat(indent * 2);
+                        for (const child of node.children) {
+                            result += this.obfuscateASTRecursive(child, output, indent + 1, options);
+                            result += '\n' + ' '.repeat((indent + 1) * 2);
+                        }
+                        break;
+
+                    case 'elseif':
+                        result += 'elseif ';
+                        if (node.children.length > 0) {
+                            result += this.obfuscateASTRecursive(node.children[0], output, indent, options);
+                        }
+                        result += ' then ';
+
+                        if (node.children.length > 1) {
+                            result += this.obfuscateASTRecursive(node.children[1], output, indent + 1, options);
+                        }
+                        break;
+
+                    case 'expression':
+                        if (node.value) {
+                            if (this.variableMap.has(node.value)) {
+                                result += this.variableMap.get(node.value);
+                            } else {
+                                result += node.value;
+                            }
+                        }
+                        break;
+
+                    case 'operator':
+                        if (node.children.length === 2) {
+                            result += this.obfuscateASTRecursive(node.children[0], output, indent, options);
+                            result += ' ' + node.value + ' ';
+                            result += this.obfuscateASTRecursive(node.children[1], output, indent, options);
+                        }
+                        break;
+
+                    case 'call':
+                        if (node.value) {
+                            if (this.variableMap.has(node.value)) {
+                                result += this.variableMap.get(node.value);
+                            } else {
+                                result += node.value;
+                            }
+                        }
+                        result += '(';
+                        const args = [];
+                        for (const arg of node.children) {
+                            args.push(this.obfuscateASTRecursive(arg, output, indent, options));
+                        }
+                        result += args.join(', ');
+                        result += ')';
+                        break;
+
+                    case 'index':
+                        if (node.value) {
+                            if (this.variableMap.has(node.value)) {
+                                result += this.variableMap.get(node.value);
+                            } else {
+                                result += node.value;
+                            }
+                        }
+                        result += '[';
+                        if (node.children.length > 0) {
+                            result += this.obfuscateASTRecursive(node.children[0], output, indent, options);
+                        }
+                        result += ']';
+                        break;
+
+                    case 'dot':
+                        if (node.children.length > 0) {
+                            result += this.obfuscateASTRecursive(node.children[0], output, indent, options);
+                        }
+                        result += '.';
+                        if (node.value) {
+                            if (this.variableMap.has(node.value)) {
+                                result += this.variableMap.get(node.value);
+                            } else {
+                                result += node.value;
+                            }
+                        }
+                        break;
+
+                    case 'for':
+                        result += 'for ';
+                        if (this.variableMap.has(node.value)) {
+                            result += this.variableMap.get(node.value);
+                        } else {
+                            result += node.value;
+                        }
+                        result += ' = ';
+
+                        if (node.children.length > 0) {
+                            result += this.obfuscateASTRecursive(node.children[0], output, indent, options);
+                        }
+                        if (node.children.length > 1) {
+                            result += ', ';
+                            result += this.obfuscateASTRecursive(node.children[1], output, indent, options);
+                        }
+                        if (node.children.length > 2) {
+                            result += ', ';
+                            result += this.obfuscateASTRecursive(node.children[2], output, indent, options);
+                        }
+
+                        if (node.children.length > 3) {
+                            result += ' do ';
+                            result += this.obfuscateASTRecursive(node.children[3], output, indent + 1, options);
+                        }
+                        result += ' end';
+                        break;
+
+                    case 'while':
+                        result += 'while ';
+                        if (node.children.length > 0) {
+                            result += this.obfuscateASTRecursive(node.children[0], output, indent, options);
+                        }
+                        if (node.children.length > 1) {
+                            result += ' do ';
+                            result += this.obfuscateASTRecursive(node.children[1], output, indent + 1, options);
+                        }
+                        result += ' end';
+                        break;
+
+                    case 'repeat':
+                        result += 'repeat ';
+                        if (node.children.length > 0) {
+                            result += this.obfuscateASTRecursive(node.children[0], output, indent + 1, options);
+                        }
+                        if (node.children.length > 1) {
+                            result += ' until ';
+                            result += this.obfuscateASTRecursive(node.children[1], output, indent, options);
+                        }
+                        break;
+
+                    case 'return':
+                        result += 'return';
+                        if (node.children.length > 0) {
+                            result += ' ';
+                            result += this.obfuscateASTRecursive(node.children[0], output, indent, options);
+                        }
+                        break;
+
+                    default:
+                        if (node.value) result += node.value;
+                        break;
+                }
+
+                return result;
+            }
+
+            // Anti-Tamper Protection
+            addAntiTamper(code) {
+                let antiTamperCode = '';
+
+                // Add checksum function
+                antiTamperCode += `local function _chk()\n`;
+                antiTamperCode += `    local s = "${this.checksumKey}"\n`;
+                antiTamperCode += `    local h = 0\n`;
+                antiTamperCode += `    for i=1,#s do\n`;
+                antiTamperCode += `        h = (h + string.byte(s, i) * i) % 0xFFFFFFFF\n`;
+                antiTamperCode += `    end\n`;
+                antiTamperCode += `    return h\n`;
+                antiTamperCode += `end\n\n`;
+
+                // Add integrity check
+                const checksum = this.calculateChecksum(code);
+                antiTamperCode += `local function _verify()\n`;
+                antiTamperCode += `    local expected = ${checksum}\n`;
+                antiTamperCode += `    local actual = _chk()\n`;
+                antiTamperCode += `    if expected ~= actual then\n`;
+                antiTamperCode += `        error("Integrity check failed!")\n`;
+                antiTamperCode += `    end\n`;
+                antiTamperCode += `    return true\n`;
+                antiTamperCode += `end\n\n`;
+
+                // Add anti-debug
+                antiTamperCode += `local function _antiDebug()\n`;
+                antiTamperCode += `    local t = os.clock()\n`;
+                antiTamperCode += `    local function _check()\n`;
+                antiTamperCode += `        if os.clock() - t > 0.1 then\n`;
+                antiTamperCode += `            error("Debugger detected!")\n`;
+                antiTamperCode += `        end\n`;
+                antiTamperCode += `    end\n`;
+                antiTamperCode += `    _check()\n`;
+                antiTamperCode += `    return _check\n`;
+                antiTamperCode += `end\n\n`;
+
+                // Add environment check
+                antiTamperCode += `local function _envCheck()\n`;
+                antiTamperCode += `    local env = getfenv and getfenv() or _ENV\n`;
+                antiTamperCode += `    if env.debug and env.debug.getinfo then\n`;
+                antiTamperCode += `        error("Debug environment detected!")\n`;
+                antiTamperCode += `    end\n`;
+                antiTamperCode += `    return true\n`;
+                antiTamperCode += `end\n\n`;
+
+                // Insert protection calls
+                antiTamperCode += `_verify()\n`;
+                antiTamperCode += `local _debugCheck = _antiDebug()\n`;
+                antiTamperCode += `_envCheck()\n\n`;
+
+                // Add the original code
+                antiTamperCode += code;
+
+                // Add periodic checks
+                antiTamperCode += `\n\nlocal function _periodicCheck()\n`;
+                antiTamperCode += `    _debugCheck()\n`;
+                antiTamperCode += `    if math.random(1, 100) == 1 then\n`;
+                antiTamperCode += `        _verify()\n`;
+                antiTamperCode += `    end\n`;
+                antiTamperCode += `end\n\n`;
+
+                // Inject periodic checks
+                const lines = antiTamperCode.split('\n');
+                const obfuscatedLines = [];
+                let checkCounter = 0;
+
+                for (const line of lines) {
+                    obfuscatedLines.push(line);
+                    if (line.includes('function') || line.includes('if') || line.includes('while')) {
+                        checkCounter++;
+                        if (checkCounter % 3 === 0) {
+                            obfuscatedLines.push(`    _periodicCheck()`);
+                        }
+                    }
+                }
+
+                return obfuscatedLines.join('\n');
+            }
+
+            // String Encryption
+            encryptStrings(code) {
+                const stringPattern = /"([^"]*)"|'([^']*)'/g;
+                let encrypted = '';
+
+                // Add decryption function
+                encrypted += `local function _dec(s, k)\n`;
+                encrypted += `    local r = ""\n`;
+                encrypted += `    for i=1,#s do\n`;
+                encrypted += `        local c = string.byte(s, i)\n`;
+                encrypted += `        local key = string.byte(k, (i-1)%#k+1)\n`;
+                encrypted += `        r = r .. string.char(bit32 and bit32.bxor(c, key) or (c ~ key))\n`;
+                encrypted += `    end\n`;
+                encrypted += `    return r\n`;
+                encrypted += `end\n\n`;
+
+                let lastEnd = 0;
+                let match;
+
+                while ((match = stringPattern.exec(code)) !== null) {
+                    const before = code.substring(lastEnd, match.index);
+                    encrypted += before;
+
+                    const originalString = match[1] || match[2];
+                    const encryptedString = this.encryptString(originalString);
+                    const key = this.generateEncryptionKey();
+
+                    encrypted += `(_dec("${encryptedString}", "${key}"))`;
+                    lastEnd = match.index + match[0].length;
+                }
+
+                encrypted += code.substring(lastEnd);
+                return encrypted;
+            }
+
+            encryptString(plaintext) {
+                const key = this.generateEncryptionKey();
+                let encrypted = '';
+
+                for (let i = 0; i < plaintext.length; i++) {
+                    const keyChar = key[i % key.length];
+                    const xorChar = plaintext.charCodeAt(i) ^ keyChar.charCodeAt(0);
+                    encrypted += this.toHex(xorChar);
+                }
+
+                return encrypted;
+            }
+
+            generateEncryptionKey() {
+                const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
+                let key = '';
+                for (let i = 0; i < 8; i++) {
+                    key += chars[Math.floor(this.random() * chars.length)];
+                }
+                return key;
+            }
+
+            toHex(b) {
+                return b.toString(16).padStart(2, '0').toUpperCase();
+            }
+
+            // Control Flow Obfuscation
+            obfuscateControlFlow(code) {
+                const lines = code.split('\n');
+                const obfuscated = [];
+
+                for (const line of lines) {
+                    const trimmed = line.trim();
+                    if (trimmed.startsWith('if') || trimmed.startsWith('while') ||
+                        trimmed.startsWith('for') || trimmed.startsWith('function')) {
+                        const opaqueCondition = this.generateOpaquePredicate();
+                        obfuscated.push(line);
+                        obfuscated.push(`    if ${opaqueCondition} then`);
+                        obfuscated.push(`        -- Original code continues`);
+                        obfuscated.push(`    else`);
+                        obfuscated.push(`        -- Dead branch`);
+                        obfuscated.push(`        _dummy = ${this.generateRandomExpression()}`);
+                        obfuscated.push(`    end`);
+                    } else {
+                        obfuscated.push(line);
+                    }
+                }
+
+                return obfuscated.join('\n');
+            }
+
+            generateOpaquePredicate() {
+                const a = Math.floor(this.random() * 100) + 1;
+                const b = Math.floor(this.random() * 100) + 1;
+                const c = Math.floor(this.random() * 10) + 1;
+                return `(${a} * ${b} + ${c}) % ${Math.floor(this.random() * 8) + 2} == 0`;
+            }
+
+            generateRandomExpression() {
+                const a = Math.floor(this.random() * 100) + 1;
+                const b = Math.floor(this.random() * 100) + 1;
+                const op = ['+', '-', '*', '/'][Math.floor(this.random() * 4)];
+                return `${a} ${op} ${b}`;
+            }
+
+            // Dead Code Insertion
+            insertDeadCode(code) {
+                const lines = code.split('\n');
+                const result = [];
+                let deadCodeCount = 0;
+
+                for (let i = 0; i < lines.length; i++) {
+                    result.push(lines[i]);
+
+                    if (lines[i].includes('function') || lines[i].includes('then') ||
+                        lines[i].includes('do') || lines[i].includes('end')) {
+                        if (this.random() < 0.3 && deadCodeCount < 10) {
+                            const deadCode = this.generateDeadCode();
+                            result.push(`    -- Dead code ${deadCodeCount + 1}`);
+                            result.push(`    ${deadCode}`);
+                            deadCodeCount++;
+                        }
+                    }
+                }
+
+                return result.join('\n');
+            }
+
+            generateDeadCode() {
+                const deadVars = ['_a', '_b', '_c', '_d', '_e', '_f'];
+                const varName = deadVars[Math.floor(this.random() * deadVars.length)];
+                const value = Math.floor(this.random() * 1000) + 1;
+                return `local ${varName} = ${value}`;
+            }
+
+            // Minification
+            minify(code) {
+                let minified = code;
+
+                // Remove comments
+                minified = minified.replace(/--\[\[.*?\]\]--/gs, '');
+                minified = minified.replace(/--[^\n]*/g, '');
+
+                // Remove extra whitespace
+                minified = minified.replace(/\s+/g, ' ');
+
+                // Remove whitespace around operators and brackets
+                minified = minified.replace(/\s*([,;=(){}[\]\.])\s*/g, '$1');
+
+                // Remove unnecessary semicolons
+                minified = minified.replace(/;\s*;/g, ';');
+
+                return minified.trim();
+            }
+
+            // Packaging
+            packageObfuscatedCode(code) {
+                const header = `--[[\n`;
+                header += `    Obfuscated with LuauObfuscator Pro v2.0\n`;
+                header += `    Generated: ${new Date().toLocaleString()}\n`;
+                header += `    SHA1: ${this.computeSHA1(code)}\n`;
+                header += `--]]\n\n`;
+                return header + code;
+            }
+
+            // Utility functions
+            computeSHA1(input) {
+                // Simple SHA1 implementation (for display only)
+                let hash = 0;
+                for (let i = 0; i < input.length; i++) {
+                    hash = ((hash << 5) - hash) + input.charCodeAt(i);
+                    hash = hash & hash;
+                }
+                return Math.abs(hash).toString(16).padStart(40, '0');
+            }
+
+            generateChecksumKey() {
+                const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/';
+                let result = '';
+                for (let i = 0; i < 32; i++) {
+                    result += chars[Math.floor(this.random() * chars.length)];
+                }
+                return result;
+            }
+
+            calculateChecksum(code) {
+                let checksum = 0;
+                for (let i = 0; i < code.length; i++) {
+                    checksum = (checksum * 31 + code.charCodeAt(i)) % 0xFFFFFFFF;
+                }
+                return checksum;
+            }
+
+            isKeyword(token, keyword = null) {
+                if (keyword) return token === keyword;
+
+                const keywords = new Set([
+                    'and', 'break', 'do', 'else', 'elseif', 'end', 'false', 'for', 'function',
+                    'if', 'in', 'local', 'nil', 'not', 'or', 'repeat', 'return', 'then', 'true',
+                    'until', 'while'
+                ]);
+                return keywords.has(token);
+            }
+
+            isIdentifier(token) {
+                return token && /^[a-zA-Z_][a-zA-Z0-9_]*$/.test(token);
+            }
+
+            isNumeric(token) {
+                return !isNaN(parseFloat(token)) && isFinite(token);
+            }
+
+            isString(token) {
+                return (token.startsWith('"') && token.endsWith('"')) ||
+                    (token.startsWith("'") && token.endsWith("'"));
+            }
+
+            isOperator(token) {
+                const operators = new Set([
+                    '+', '-', '*', '/', '^', '%', '==', '~=', '<', '>', '<=', '>=',
+                    'and', 'or', 'not', '..', '#'
+                ]);
+                return operators.has(token);
+            }
+        }
+
+        // ========================================
+        // UI CONTROLLERS
+        // ========================================
+
+        const obfuscator = new LuauObfuscator();
+
+        function obfuscate() {
+            const inputCode = document.getElementById('inputCode').value;
+            if (!inputCode.trim()) {
+                showStatus('Please enter some Luau code to obfuscate.', 'error');
+                return;
+            }
+
+            // Show progress
+            const progressBar = document.getElementById('progressBar');
+            const progressFill = document.getElementById('progressFill');
+            progressBar.classList.add('active');
+            progressFill.style.width = '0%';
+
+            // Update progress
+            let progress = 0;
+            const interval = setInterval(() => {
+                progress += Math.random() * 20;
+                if (progress > 90) progress = 90;
+                progressFill.style.width = progress + '%';
+            }, 100);
+
+            // Get options
+            const options = {
+                enableAntiTamper: document.getElementById('antiTamper').checked,
+                encryptStrings: document.getElementById('encryptStrings').checked,
+                obfuscateControlFlow: document.getElementById('controlFlow').checked,
+                insertDeadCode: document.getElementById('deadCode').checked,
+                minify: document.getElementById('minify').checked,
+                useUnicodeNames: document.getElementById('unicodeNames').checked,
+                nameLength: parseInt(document.getElementById('nameLength').value) || 8,
+                securityLevel: parseInt(document.getElementById('securityLevel').value) || 3
+            };
+
+            // Obfuscate
+            setTimeout(() => {
+                const result = obfuscator.obfuscate(inputCode, options);
+
+                clearInterval(interval);
+                progressFill.style.width = '100%';
+
+                setTimeout(() => {
+                    progressBar.classList.remove('active');
+
+                    if (result.success) {
+                        document.getElementById('outputCode').value = result.obfuscatedCode;
+                        document.getElementById('originalSize').textContent = result.originalSize;
+                        document.getElementById('obfuscatedSize').textContent = result.obfuscatedSize;
+                        const ratio = ((result.obfuscatedSize / result.originalSize) * 100);
+                        document.getElementById('sizeRatio').textContent = ratio.toFixed(1) + '%';
+                        document.getElementById('variablesCount').textContent = Object.keys(result.variableMap).length;
+
+                        // Show variable map
+                        if (Object.keys(result.variableMap).length > 0) {
+                            const panel = document.getElementById('variablePanel');
+                            panel.style.display = 'block';
+                            const mapDiv = document.getElementById('variableMap');
+                            mapDiv.innerHTML = '';
+                            for (const [original, obfuscated] of Object.entries(result.variableMap)) {
+                                const entry = document.createElement('div');
+                                entry.className = 'variable-entry';
+                                entry.innerHTML = `
+                                    <span class="variable-original">${original}</span>
+                                    <span class="variable-obfuscated">${obfuscated}</span>
+                                `;
+                                mapDiv.appendChild(entry);
+                            }
+                        }
+
+                        showStatus('✅ Obfuscation completed successfully!', 'success');
+                    } else {
+                        showStatus('❌ Error: ' + result.error, 'error');
+                    }
+                }, 500);
+            }, 500);
+        }
+
+        function loadExample() {
+            const example = `-- Advanced Luau Example
+local function fibonacci(n)
+    if n <= 1 then
+        return n
+    end
+    return fibonacci(n - 1) + fibonacci(n - 2)
+end
+
+local function processData(data)
+    local result = {}
+    for i, value in ipairs(data) do
+        if value > 0 then
+            table.insert(result, value * 2)
+        end
+    end
+    return result
+end
+
+local function main()
+    local numbers = {1, 2, 3, 4, 5, 6, 7, 8, 9, 10}
+    local processed = processData(numbers)
+    
+    for i, value in ipairs(processed) do
+        print("Value " .. i .. ": " .. value)
+    end
+    
+    local fibResult = fibonacci(10)
+    print("Fibonacci(10) = " .. fibResult)
+end
+
+main()`;
+
+            document.getElementById('inputCode').value = example;
+            showStatus('📂 Example code loaded!', 'info');
+        }
+
+        function clearAll() {
+            document.getElementById('inputCode').value = '';
+            document.getElementById('outputCode').value = '';
+            document.getElementById('originalSize').textContent = '0';
+            document.getElementById('obfuscatedSize').textContent = '0';
+            document.getElementById('sizeRatio').textContent = '0%';
+            document.getElementById('variablesCount').textContent = '0';
+            document.getElementById('variablePanel').style.display = 'none';
+            document.getElementById('variableMap').innerHTML = '';
+            document.getElementById('status').className = 'status';
+            document.getElementById('status').style.display = 'none';
+            showStatus('🧹 All cleared!', 'info');
+        }
+
+        function copyOutput() {
+            const output = document.getElementById('outputCode');
+            if (output.value) {
+                navigator.clipboard.writeText(output.value).then(() => {
+                    showStatus('📋 Copied to clipboard!', 'success');
+                }).catch(() => {
+                    output.select();
+                    document.execCommand('copy');
+                    showStatus('📋 Copied to clipboard!', 'success');
+                });
+            } else {
+                showStatus('No output to copy!', 'error');
+            }
+        }
+
+        function downloadOutput() {
+            const output = document.getElementById('outputCode').value;
+            if (output) {
+                const blob = new Blob([output], { type: 'text/plain' });
                 const url = URL.createObjectURL(blob);
                 const a = document.createElement('a');
                 a.href = url;
-                a.download = 'finny_output.lua';
-                document.body.appendChild(a);
+                a.download = 'obfuscated_' + Date.now() + '.lua';
                 a.click();
-                document.body.removeChild(a);
                 URL.revokeObjectURL(url);
-                log('⬇️ Downloaded finny_output.lua', 'success');
-                setStatus('Downloaded', 'green');
+                showStatus('💾 File downloaded!', 'success');
+            } else {
+                showStatus('No output to download!', 'error');
+            }
+        }
+
+        function showStatus(message, type) {
+            const status = document.getElementById('status');
+            status.textContent = message;
+            status.className = 'status ' + type;
+            status.style.display = 'block';
+
+            setTimeout(() => {
+                status.style.display = 'none';
+            }, 5000);
+        }
+
+        // Security level slider
+        document.getElementById('securityLevel').addEventListener('input', function() {
+            document.getElementById('securityLabel').textContent = this.value;
+            // Update security dots
+            const dots = document.querySelectorAll('.dot');
+            dots.forEach((dot, index) => {
+                dot.classList.toggle('active', index < parseInt(this.value));
             });
+        });
 
-            clearBtn.addEventListener('click', function() {
-                source.value = '';
-                output.value = '';
-                updateCounts();
-                log('🗑️ Cleared', 'info');
-                setStatus('Cleared', 'green');
-            });
+        // Keyboard shortcuts
+        document.addEventListener('keydown', function(e) {
+            if (e.ctrlKey && e.key === 'Enter') {
+                e.preventDefault();
+                obfuscate();
+            }
+        });
 
-            function getFormat() { for (const r of formatRadios) if (r.checked) return r.value; return 'pretty'; }
-
-            // ─── Obfuscate button ──────────────────────────────────────
-            obfBtn.addEventListener('click', function() {
-                const input = source.value;
-                if (!input.trim()) { log('⚠️ Paste some code first', 'warn'); setStatus('Paste some code first', 'yellow'); return; }
-                if (processing) return;
-                processing = true;
-                obfBtn.disabled = true;
-                deobfBtn.disabled = true;
-                setStatus('Obfuscating...', 'blue');
-                log('⚙️ Starting obfuscation...', 'info');
-                setProgress(0, '0%');
-
-                const seed = parseInt(seedInput.value) || 0;
-                reseed(seed);
-                // The layer toggles are ignored for this engine, but we keep them for UI consistency.
-                // The protection slider and deadCode/antiDebug toggles are also ignored.
-                const format = getFormat();
-                const wasPretty = prettyCheck.checked;
-                if (format === 'minified') prettyCheck.checked = false;
-                else prettyCheck.checked = true;
-
-                let jobName = 'script.lua';
-                const first = source.value.split('\n')[0];
-                const m = first.match(/--\s*(\S+\.lua)/);
-                if (m) jobName = m[1];
-
-                setTimeout(() => {
-                    try {
-                        const start = performance.now();
-                        setProgress(10, '10%');
-                        const result = obfuscate(input);
-                        setProgress(60, '60%');
-                        output.value = result;
-                        updateCounts();
-                        prettyCheck.checked = wasPretty;
-                        const elapsed = (performance.now() - start).toFixed(0);
-                        log('✅ Obfuscation done in ' + elapsed + 'ms', 'success');
-                        setStatus('Done in ' + elapsed + 'ms', 'green');
-                        perfDisplay.textContent = elapsed + 'ms';
-                        addJob(jobName, 'COMPLETED');
-                        setProgress(100, '100%');
-                        setTimeout(() => setProgress(), 800);
-                    } catch (e) {
-                        log('❌ Error: ' + e.message, 'error');
-                        setStatus('Error: ' + e.message, 'red');
-                        console.error(e);
-                        perfDisplay.textContent = 'error';
-                        setProgress();
-                    } finally {
-                        processing = false;
-                        obfBtn.disabled = false;
-                        deobfBtn.disabled = false;
-                        prettyCheck.checked = wasPretty;
+        // Auto-obfuscate on option change (optional)
+        let autoObfuscateTimeout;
+        document.querySelectorAll('.option-item input').forEach(input => {
+            input.addEventListener('change', function() {
+                clearTimeout(autoObfuscateTimeout);
+                autoObfuscateTimeout = setTimeout(() => {
+                    if (document.getElementById('inputCode').value.trim()) {
+                        obfuscate();
                     }
-                }, 20);
+                }, 1000);
             });
+        });
 
-            // ─── Deobfuscate button ────────────────────────────────────
-            deobfBtn.addEventListener('click', function() {
-                const input = output.value;
-                if (!input.trim()) { log('⚠️ Nothing to deobfuscate', 'warn'); setStatus('Nothing to deobfuscate', 'yellow'); return; }
-                try {
-                    const decoded = deobfuscate(input);
-                    if (decoded.startsWith('Could') || decoded.startsWith('Deobf') || decoded.includes('error')) {
-                        log('❌ ' + decoded, 'error');
-                        setStatus('Deobf failed', 'red');
-                        output.value = decoded;
-                    } else {
-                        output.value = decoded;
-                        updateCounts();
-                        log('🔓 Deobfuscation successful', 'success');
-                        setStatus('Deobfuscated', 'green');
-                    }
-                } catch (e) { log('❌ Deobf error: ' + e.message, 'error'); setStatus('Deobf error', 'red'); }
-            });
-
-            // ─── Init ──────────────────────────────────────────────────
-            source.value = '-- example.lua\nprint("hello world")';
-            setPreset('weak');
-            updateCounts();
-            setStatus('Ready', 'green');
-            log('🚀 finny.obf v5 — Anti‑AI with Universal Anti‑Dump', 'info');
-            log('⚡ New engine: anti‑dump, tamper checks, decoy payload', 'info');
-            toggleLogPanel(true);
-            updateDashboard();
-        })();
+        // Initialize
+        loadExample();
+        console.log('🔒 Luau Obfuscator Pro loaded successfully!');
     </script>
 </body>
 </html>
