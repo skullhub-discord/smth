@@ -32,7 +32,6 @@
             box-shadow: 0 20px 60px rgba(0, 0, 0, 0.8);
         }
 
-        /* Header */
         .header {
             display: flex;
             align-items: center;
@@ -105,7 +104,6 @@
             50% { opacity: 0.4; }
         }
 
-        /* Main Grid */
         .main-grid {
             display: grid;
             grid-template-columns: 1fr 1fr;
@@ -119,7 +117,6 @@
             }
         }
 
-        /* Panels */
         .panel {
             background: #16161f;
             border-radius: 12px;
@@ -221,7 +218,6 @@
             background: #4facfe;
         }
 
-        /* Options Panel */
         .options-panel {
             background: #16161f;
             border-radius: 12px;
@@ -263,7 +259,6 @@
             min-width: 24px;
         }
 
-        /* Toggle Switch */
         .switch {
             position: relative;
             width: 44px;
@@ -310,7 +305,6 @@
             background: white;
         }
 
-        /* Range Slider */
         input[type="range"] {
             -webkit-appearance: none;
             appearance: none;
@@ -350,7 +344,6 @@
             width: 120px;
         }
 
-        /* Buttons */
         .button-group {
             display: flex;
             gap: 12px;
@@ -420,7 +413,6 @@
             background: #4a2a2a;
         }
 
-        /* Stats */
         .stats {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
@@ -450,7 +442,6 @@
             letter-spacing: 0.5px;
         }
 
-        /* Status message */
         .status {
             padding: 10px 16px;
             border-radius: 8px;
@@ -480,7 +471,6 @@
             color: #60a5fa;
         }
 
-        /* Variable Map */
         .variable-map {
             max-height: 150px;
             overflow-y: auto;
@@ -517,7 +507,6 @@
             color: #a855f7;
         }
 
-        /* Footer */
         .footer {
             text-align: center;
             margin-top: 30px;
@@ -552,7 +541,6 @@
             font-weight: 600;
         }
 
-        /* Scrollbar */
         ::-webkit-scrollbar {
             width: 6px;
             height: 6px;
@@ -575,7 +563,6 @@
             width: 6px;
         }
 
-        /* Animations */
         @keyframes slideIn {
             from {
                 opacity: 0;
@@ -591,7 +578,6 @@
             animation: slideIn 0.3s ease-out;
         }
 
-        /* Responsive tweaks */
         @media (max-width: 480px) {
             .container {
                 padding: 16px;
@@ -696,7 +682,7 @@ main()</textarea>
                     <label>Encryption layers</label>
                     <div class="value">
                         <span id="layersDisplay">3</span>
-                        <input type="range" id="encryptionLayers" min="1" max="10" value="3">
+                        <input type="range" id="encryptionLayers" min="1" max="10" value="3" oninput="document.getElementById('layersDisplay').textContent=this.value">
                         <div class="range-labels">
                             <span>1</span>
                             <span>10</span>
@@ -803,7 +789,7 @@ main()</textarea>
 
     <script>
         // ========================================
-        // LUAU OBFUSCATOR ENGINE
+        // COMPLETE LUAU OBFUSCATOR ENGINE
         // ========================================
 
         class LuauObfuscator {
@@ -812,6 +798,7 @@ main()</textarea>
                 this.checksumKey = '';
                 this.tokens = [];
                 this.current = 0;
+                this._random = Math.random;
             }
 
             obfuscate(sourceCode, options = {}) {
@@ -828,38 +815,53 @@ main()</textarea>
 
                 options = { ...defaultOptions, ...options };
                 this.checksumKey = this.generateChecksumKey();
+                this.variableMap.clear();
 
                 try {
+                    // Tokenize
                     const tokens = this.tokenize(sourceCode);
                     this.tokens = tokens;
+                    
+                    // Parse AST
                     const ast = this.parseAST(tokens);
+                    
+                    // Collect identifiers
                     const identifiers = this.collectIdentifiers(ast);
+                    
+                    // Generate obfuscated names
                     this.generateObfuscatedNames(identifiers, options);
 
+                    // Obfuscate AST
                     let obfuscatedCode = this.obfuscateAST(ast, options);
 
+                    // Anti-tamper
                     if (options.antiTamper) {
                         obfuscatedCode = this.addAntiTamper(obfuscatedCode);
                     }
 
+                    // String encryption
                     if (options.stringEncrypt) {
                         for (let i = 0; i < options.encryptionLayers; i++) {
                             obfuscatedCode = this.encryptStrings(obfuscatedCode);
                         }
                     }
 
+                    // Control flow obfuscation
                     if (options.controlFlow) {
                         obfuscatedCode = this.obfuscateControlFlow(obfuscatedCode);
                     }
 
+                    // Dead code insertion
                     if (options.deadCode) {
                         obfuscatedCode = this.insertDeadCode(obfuscatedCode);
                     }
 
+                    // Minify
                     if (options.minify) {
                         obfuscatedCode = this.minify(obfuscatedCode);
                     }
 
+                    // Package
                     obfuscatedCode = this.packageObfuscatedCode(obfuscatedCode);
 
                     return {
@@ -872,23 +874,42 @@ main()</textarea>
                 } catch (error) {
                     return {
                         success: false,
-                        error: error.message
+                        error: error.message || 'Obfuscation failed'
                     };
                 }
             }
 
+            // ============ TOKENIZER ============
             tokenize(sourceCode) {
                 const tokens = [];
                 let current = 0;
 
                 while (current < sourceCode.length) {
-                    if (/\s/.test(sourceCode[current])) { current++; continue; }
+                    // Skip whitespace
+                    if (/\s/.test(sourceCode[current])) {
+                        current++;
+                        continue;
+                    }
 
+                    // Skip single-line comments
                     if (sourceCode[current] === '-' && current + 1 < sourceCode.length && sourceCode[current + 1] === '-') {
                         while (current < sourceCode.length && sourceCode[current] !== '\n') current++;
                         continue;
                     }
 
+                    // Skip multi-line comments
+                    if (sourceCode[current] === '-' && current + 2 < sourceCode.length &&
+                        sourceCode[current + 1] === '-' && sourceCode[current + 2] === '[') {
+                        while (current < sourceCode.length && !(sourceCode[current] === ']' &&
+                                current + 2 < sourceCode.length && sourceCode[current + 1] === ']' &&
+                                sourceCode[current + 2] === '-')) {
+                            current++;
+                        }
+                        current += 3;
+                        continue;
+                    }
+
+                    // Strings
                     if (sourceCode[current] === '"' || sourceCode[current] === "'") {
                         const quoteChar = sourceCode[current];
                         const start = current;
@@ -902,6 +923,7 @@ main()</textarea>
                         continue;
                     }
 
+                    // Identifiers and keywords
                     if (/[a-zA-Z_]/.test(sourceCode[current])) {
                         const start = current;
                         while (current < sourceCode.length && /[a-zA-Z0-9_]/.test(sourceCode[current])) current++;
@@ -909,6 +931,7 @@ main()</textarea>
                         continue;
                     }
 
+                    // Numbers
                     if (/[0-9]/.test(sourceCode[current])) {
                         const start = current;
                         while (current < sourceCode.length && /[0-9.]/.test(sourceCode[current])) current++;
@@ -916,9 +939,10 @@ main()</textarea>
                         continue;
                     }
 
+                    // Operators and punctuation
                     if (current + 1 < sourceCode.length) {
                         const twoChar = sourceCode.substring(current, current + 2);
-                        if (['==', '~=', '<=', '>=', '..'].includes(twoChar)) {
+                        if (['==', '~=', '<=', '>=', '..', '//'].includes(twoChar)) {
                             tokens.push(twoChar);
                             current += 2;
                             continue;
@@ -932,6 +956,7 @@ main()</textarea>
                 return tokens;
             }
 
+            // ============ PARSER ============
             parseAST(tokens) {
                 const root = { type: 'root', children: [], tokensConsumed: 0 };
                 let current = 0;
@@ -971,6 +996,9 @@ main()</textarea>
                         root.children.push({ type: 'break', value: token });
                         current++;
                     } else if (this.isKeyword(token, 'end')) {
+                        current++;
+                        break;
+                    } else if (token === '}' || token === ')') {
                         current++;
                         break;
                     } else {
@@ -1015,22 +1043,41 @@ main()</textarea>
                     funcNode.children.push(paramsNode);
                 }
 
-                if (current < tokens.length && tokens[current] === '{') {
-                    current++;
-                    const bodyNode = { type: 'block', children: [] };
+                // Parse function body (using do/end or { } style)
+                if (current < tokens.length) {
+                    if (tokens[current] === '{') {
+                        current++;
+                        const bodyNode = { type: 'block', children: [] };
 
-                    while (current < tokens.length && tokens[current] !== '}') {
-                        const parsed = this.parseAST(tokens.slice(current));
-                        if (parsed.children.length > 0) {
-                            bodyNode.children.push(...parsed.children);
-                            current += parsed.tokensConsumed;
-                        } else {
-                            current++;
+                        while (current < tokens.length && tokens[current] !== '}') {
+                            const parsed = this.parseAST(tokens.slice(current));
+                            if (parsed.children.length > 0) {
+                                bodyNode.children.push(...parsed.children);
+                                current += parsed.tokensConsumed;
+                            } else {
+                                current++;
+                            }
                         }
-                    }
 
-                    if (current < tokens.length && tokens[current] === '}') current++;
-                    funcNode.children.push(bodyNode);
+                        if (current < tokens.length && tokens[current] === '}') current++;
+                        funcNode.children.push(bodyNode);
+                    } else if (this.isKeyword(tokens[current], 'do')) {
+                        current++;
+                        const bodyNode = { type: 'block', children: [] };
+
+                        while (current < tokens.length && !this.isKeyword(tokens[current], 'end')) {
+                            const parsed = this.parseAST(tokens.slice(current));
+                            if (parsed.children.length > 0) {
+                                bodyNode.children.push(...parsed.children);
+                                current += parsed.tokensConsumed;
+                            } else {
+                                current++;
+                            }
+                        }
+
+                        if (current < tokens.length && this.isKeyword(tokens[current], 'end')) current++;
+                        funcNode.children.push(bodyNode);
+                    }
                 }
 
                 return { node: funcNode, consumed: current };
@@ -1153,4 +1200,965 @@ main()</textarea>
 
                     if (current < tokens.length && tokens[current] === ',') {
                         current++;
-                        const endResult
+                        const endResult = this.parseExpression(tokens, current);
+                        if (endResult.node) {
+                            forNode.children.push(endResult.node);
+                            current = endResult.consumed;
+                        }
+
+                        if (current < tokens.length && tokens[current] === ',') {
+                            current++;
+                            const stepResult = this.parseExpression(tokens, current);
+                            if (stepResult.node) {
+                                forNode.children.push(stepResult.node);
+                                current = stepResult.consumed;
+                            }
+                        }
+                    }
+                }
+
+                if (current < tokens.length && this.isKeyword(tokens[current], 'do')) {
+                    current++;
+                    const blockNode = { type: 'block', children: [] };
+
+                    while (current < tokens.length && !this.isKeyword(tokens[current], 'end')) {
+                        const parsed = this.parseAST(tokens.slice(current));
+                        if (parsed.children.length > 0) {
+                            blockNode.children.push(...parsed.children);
+                            current += parsed.tokensConsumed;
+                        } else {
+                            current++;
+                        }
+                    }
+
+                    if (current < tokens.length && this.isKeyword(tokens[current], 'end')) current++;
+                    forNode.children.push(blockNode);
+                }
+
+                return { node: forNode, consumed: current };
+            }
+
+            parseWhileStatement(tokens, current) {
+                const whileNode = { type: 'while', children: [] };
+                current++;
+
+                const conditionResult = this.parseExpression(tokens, current);
+                if (conditionResult.node) {
+                    whileNode.children.push(conditionResult.node);
+                    current = conditionResult.consumed;
+                }
+
+                if (current < tokens.length && this.isKeyword(tokens[current], 'do')) {
+                    current++;
+                    const blockNode = { type: 'block', children: [] };
+
+                    while (current < tokens.length && !this.isKeyword(tokens[current], 'end')) {
+                        const parsed = this.parseAST(tokens.slice(current));
+                        if (parsed.children.length > 0) {
+                            blockNode.children.push(...parsed.children);
+                            current += parsed.tokensConsumed;
+                        } else {
+                            current++;
+                        }
+                    }
+
+                    if (current < tokens.length && this.isKeyword(tokens[current], 'end')) current++;
+                    whileNode.children.push(blockNode);
+                }
+
+                return { node: whileNode, consumed: current };
+            }
+
+            parseRepeatStatement(tokens, current) {
+                const repeatNode = { type: 'repeat', children: [] };
+                current++;
+
+                const blockNode = { type: 'block', children: [] };
+
+                while (current < tokens.length && !this.isKeyword(tokens[current], 'until')) {
+                    const parsed = this.parseAST(tokens.slice(current));
+                    if (parsed.children.length > 0) {
+                        blockNode.children.push(...parsed.children);
+                        current += parsed.tokensConsumed;
+                    } else {
+                        current++;
+                    }
+                }
+                repeatNode.children.push(blockNode);
+
+                if (current < tokens.length && this.isKeyword(tokens[current], 'until')) {
+                    current++;
+                    const conditionResult = this.parseExpression(tokens, current);
+                    if (conditionResult.node) {
+                        repeatNode.children.push(conditionResult.node);
+                        current = conditionResult.consumed;
+                    }
+                }
+
+                return { node: repeatNode, consumed: current };
+            }
+
+            parseReturnStatement(tokens, current) {
+                const returnNode = { type: 'return', children: [] };
+                current++;
+
+                const result = this.parseExpression(tokens, current);
+                if (result.node) {
+                    returnNode.children.push(result.node);
+                    current = result.consumed;
+                }
+
+                return { node: returnNode, consumed: current };
+            }
+
+            parseExpression(tokens, current) {
+                if (current >= tokens.length) return { node: null, consumed: current };
+
+                let exprNode = { type: 'expression', children: [] };
+
+                if (this.isIdentifier(tokens[current]) || tokens[current] === 'self' || tokens[current] === 'super') {
+                    exprNode.value = tokens[current];
+                    current++;
+                } else if (tokens[current] === '(') {
+                    current++;
+                    const subResult = this.parseExpression(tokens, current);
+                    if (subResult.node) {
+                        exprNode.children.push(subResult.node);
+                        current = subResult.consumed;
+                    }
+                    if (current < tokens.length && tokens[current] === ')') current++;
+                    return { node: exprNode, consumed: current };
+                } else if (this.isNumeric(tokens[current]) || this.isString(tokens[current])) {
+                    exprNode.value = tokens[current];
+                    current++;
+                } else if (this.isKeyword(tokens[current]) && ['true', 'false', 'nil'].includes(tokens[current])) {
+                    exprNode.value = tokens[current];
+                    current++;
+                } else {
+                    return { node: null, consumed: current };
+                }
+
+                // Handle function calls
+                if (current < tokens.length && tokens[current] === '(') {
+                    const callNode = { type: 'call', children: [] };
+                    callNode.value = exprNode.value;
+                    current++;
+
+                    while (current < tokens.length && tokens[current] !== ')') {
+                        const argResult = this.parseExpression(tokens, current);
+                        if (argResult.node) {
+                            callNode.children.push(argResult.node);
+                            current = argResult.consumed;
+                        }
+                        if (current < tokens.length && tokens[current] === ',') current++;
+                    }
+
+                    if (current < tokens.length && tokens[current] === ')') current++;
+                    return { node: callNode, consumed: current };
+                }
+
+                // Handle indexing
+                if (current < tokens.length && tokens[current] === '[') {
+                    const indexNode = { type: 'index', children: [] };
+                    indexNode.value = exprNode.value;
+                    current++;
+
+                    const indexResult = this.parseExpression(tokens, current);
+                    if (indexResult.node) {
+                        indexNode.children.push(indexResult.node);
+                        current = indexResult.consumed;
+                    }
+
+                    if (current < tokens.length && tokens[current] === ']') current++;
+                    return { node: indexNode, consumed: current };
+                }
+
+                // Handle dot notation
+                if (current < tokens.length && tokens[current] === '.') {
+                    current++;
+                    if (current < tokens.length && this.isIdentifier(tokens[current])) {
+                        const dotNode = { type: 'dot', children: [] };
+                        dotNode.value = tokens[current];
+                        current++;
+                        dotNode.children.push(exprNode);
+                        return { node: dotNode, consumed: current };
+                    }
+                }
+
+                // Handle operators (binary)
+                if (current < tokens.length && this.isOperator(tokens[current])) {
+                    const opNode = { type: 'operator', value: tokens[current], children: [exprNode] };
+                    current++;
+                    const rightResult = this.parseExpression(tokens, current);
+                    if (rightResult.node) {
+                        opNode.children.push(rightResult.node);
+                        current = rightResult.consumed;
+                        return { node: opNode, consumed: current };
+                    }
+                }
+
+                return { node: exprNode, consumed: current };
+            }
+
+            // ============ COLLECT IDENTIFIERS ============
+            collectIdentifiers(node) {
+                const identifiers = new Set();
+                this.collectIdentifiersRecursive(node, identifiers);
+                return identifiers;
+            }
+
+            collectIdentifiersRecursive(node, identifiers) {
+                if (!node) return;
+
+                if (['parameter', 'local', 'function', 'variable'].includes(node.type)) {
+                    if (node.value && !this.isKeyword(node.value)) {
+                        identifiers.add(node.value);
+                    }
+                }
+
+                if (node.children) {
+                    for (const child of node.children) {
+                        this.collectIdentifiersRecursive(child, identifiers);
+                    }
+                }
+            }
+
+            // ============ GENERATE OBFUSCATED NAMES ============
+            generateObfuscatedNames(identifiers, options) {
+                const reservedKeywords = new Set([
+                    'and', 'break', 'do', 'else', 'elseif', 'end', 'false', 'for', 'function',
+                    'if', 'in', 'local', 'nil', 'not', 'or', 'repeat', 'return', 'then', 'true',
+                    'until', 'while', 'self', 'super'
+                ]);
+
+                for (const identifier of identifiers) {
+                    if (reservedKeywords.has(identifier)) continue;
+
+                    let obfuscatedName;
+                    if (options.useUnicodeNames) {
+                        obfuscatedName = this.generateUnicodeName();
+                    } else {
+                        obfuscatedName = this.generateRandomName(options.nameLength || 8);
+                    }
+
+                    this.variableMap.set(identifier, obfuscatedName);
+                }
+            }
+
+            generateRandomName(length) {
+                const chars = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ_';
+                const digits = '0123456789';
+
+                let name = chars[Math.floor(this._random() * chars.length)];
+                for (let i = 1; i < length; i++) {
+                    const source = this._random() < 0.5 ? chars : digits;
+                    name += source[Math.floor(this._random() * source.length)];
+                }
+                return name;
+            }
+
+            generateUnicodeName() {
+                let name = '';
+                for (let i = 0; i < 8; i++) {
+                    const codePoint = 0x4E00 + Math.floor(this._random() * 0x4FFF);
+                    name += String.fromCharCode(codePoint);
+                }
+                return name;
+            }
+
+            // ============ OBFUSCATE AST ============
+            obfuscateAST(node, options) {
+                let result = '';
+                this._obfuscateASTRecursive(node, 0, (output, indent) => {
+                    result += output;
+                }, options);
+                return result;
+            }
+
+            _obfuscateASTRecursive(node, indent, callback, options) {
+                if (!node) return;
+
+                switch (node.type) {
+                    case 'root':
+                        for (const child of node.children) {
+                            this._obfuscateASTRecursive(child, indent, callback, options);
+                            callback('; ', indent);
+                        }
+                        break;
+
+                    case 'function':
+                        callback('function ', indent);
+                        if (node.value && this.variableMap.has(node.value)) {
+                            callback(this.variableMap.get(node.value), indent);
+                        } else if (node.value) {
+                            callback(node.value, indent);
+                        }
+
+                        for (const child of node.children) {
+                            this._obfuscateASTRecursive(child, indent, callback, options);
+                        }
+                        callback(' end', indent);
+                        break;
+
+                    case 'parameters':
+                        callback('(', indent);
+                        const paramNames = [];
+                        for (const param of node.children) {
+                            if (this.variableMap.has(param.value)) {
+                                paramNames.push(this.variableMap.get(param.value));
+                            } else {
+                                paramNames.push(param.value);
+                            }
+                        }
+                        callback(paramNames.join(', '), indent);
+                        callback(')', indent);
+                        break;
+
+                    case 'local':
+                        callback('local ', indent);
+                        if (this.variableMap.has(node.value)) {
+                            callback(this.variableMap.get(node.value), indent);
+                        } else {
+                            callback(node.value, indent);
+                        }
+
+                        if (node.children.length > 0) {
+                            callback(' = ', indent);
+                            for (const child of node.children) {
+                                this._obfuscateASTRecursive(child, indent, callback, options);
+                            }
+                        }
+                        break;
+
+                    case 'if':
+                        callback('if ', indent);
+                        if (node.children.length > 0) {
+                            this._obfuscateASTRecursive(node.children[0], indent, callback, options);
+                        }
+                        callback(' then ', indent);
+
+                        if (node.children.length > 1) {
+                            this._obfuscateASTRecursive(node.children[1], indent + 1, callback, options);
+                        }
+
+                        for (let i = 2; i < node.children.length; i++) {
+                            this._obfuscateASTRecursive(node.children[i], indent, callback, options);
+                        }
+
+                        callback(' end', indent);
+                        break;
+
+                    case 'block':
+                        callback('\n' + '  '.repeat(indent), indent);
+                        for (const child of node.children) {
+                            this._obfuscateASTRecursive(child, indent + 1, callback, options);
+                            callback('\n' + '  '.repeat(indent + 1), indent);
+                        }
+                        break;
+
+                    case 'elseif':
+                        callback('elseif ', indent);
+                        if (node.children.length > 0) {
+                            this._obfuscateASTRecursive(node.children[0], indent, callback, options);
+                        }
+                        callback(' then ', indent);
+
+                        if (node.children.length > 1) {
+                            this._obfuscateASTRecursive(node.children[1], indent + 1, callback, options);
+                        }
+                        break;
+
+                    case 'expression':
+                        if (node.value) {
+                            if (this.variableMap.has(node.value)) {
+                                callback(this.variableMap.get(node.value), indent);
+                            } else {
+                                callback(node.value, indent);
+                            }
+                        }
+                        break;
+
+                    case 'operator':
+                        if (node.children.length === 2) {
+                            this._obfuscateASTRecursive(node.children[0], indent, callback, options);
+                            callback(' ' + node.value + ' ', indent);
+                            this._obfuscateASTRecursive(node.children[1], indent, callback, options);
+                        }
+                        break;
+
+                    case 'call':
+                        if (node.value) {
+                            if (this.variableMap.has(node.value)) {
+                                callback(this.variableMap.get(node.value), indent);
+                            } else {
+                                callback(node.value, indent);
+                            }
+                        }
+                        callback('(', indent);
+                        const args = [];
+                        for (const arg of node.children) {
+                            let argStr = '';
+                            this._obfuscateASTRecursive(arg, indent, (s) => { argStr += s; }, options);
+                            args.push(argStr);
+                        }
+                        callback(args.join(', '), indent);
+                        callback(')', indent);
+                        break;
+
+                    case 'index':
+                        if (node.value) {
+                            if (this.variableMap.has(node.value)) {
+                                callback(this.variableMap.get(node.value), indent);
+                            } else {
+                                callback(node.value, indent);
+                            }
+                        }
+                        callback('[', indent);
+                        if (node.children.length > 0) {
+                            this._obfuscateASTRecursive(node.children[0], indent, callback, options);
+                        }
+                        callback(']', indent);
+                        break;
+
+                    case 'dot':
+                        if (node.children.length > 0) {
+                            this._obfuscateASTRecursive(node.children[0], indent, callback, options);
+                        }
+                        callback('.', indent);
+                        if (node.value) {
+                            if (this.variableMap.has(node.value)) {
+                                callback(this.variableMap.get(node.value), indent);
+                            } else {
+                                callback(node.value, indent);
+                            }
+                        }
+                        break;
+
+                    case 'for':
+                        callback('for ', indent);
+                        if (this.variableMap.has(node.value)) {
+                            callback(this.variableMap.get(node.value), indent);
+                        } else {
+                            callback(node.value, indent);
+                        }
+                        callback(' = ', indent);
+
+                        if (node.children.length > 0) {
+                            this._obfuscateASTRecursive(node.children[0], indent, callback, options);
+                        }
+                        if (node.children.length > 1) {
+                            callback(', ', indent);
+                            this._obfuscateASTRecursive(node.children[1], indent, callback, options);
+                        }
+                        if (node.children.length > 2) {
+                            callback(', ', indent);
+                            this._obfuscateASTRecursive(node.children[2], indent, callback, options);
+                        }
+
+                        if (node.children.length > 3) {
+                            callback(' do ', indent);
+                            this._obfuscateASTRecursive(node.children[3], indent + 1, callback, options);
+                        }
+                        callback(' end', indent);
+                        break;
+
+                    case 'while':
+                        callback('while ', indent);
+                        if (node.children.length > 0) {
+                            this._obfuscateASTRecursive(node.children[0], indent, callback, options);
+                        }
+                        if (node.children.length > 1) {
+                            callback(' do ', indent);
+                            this._obfuscateASTRecursive(node.children[1], indent + 1, callback, options);
+                        }
+                        callback(' end', indent);
+                        break;
+
+                    case 'repeat':
+                        callback('repeat ', indent);
+                        if (node.children.length > 0) {
+                            this._obfuscateASTRecursive(node.children[0], indent + 1, callback, options);
+                        }
+                        if (node.children.length > 1) {
+                            callback(' until ', indent);
+                            this._obfuscateASTRecursive(node.children[1], indent, callback, options);
+                        }
+                        break;
+
+                    case 'return':
+                        callback('return', indent);
+                        if (node.children.length > 0) {
+                            callback(' ', indent);
+                            this._obfuscateASTRecursive(node.children[0], indent, callback, options);
+                        }
+                        break;
+
+                    case 'break':
+                        callback('break', indent);
+                        break;
+
+                    default:
+                        if (node.value) callback(node.value, indent);
+                        break;
+                }
+            }
+
+            // ============ ANTI-TAMPER ============
+            addAntiTamper(code) {
+                const checksum = this.calculateChecksum(code);
+                let antiTamperCode = '';
+
+                antiTamperCode += `local function _chk()\n`;
+                antiTamperCode += `    local s = "${this.checksumKey}"\n`;
+                antiTamperCode += `    local h = 0\n`;
+                antiTamperCode += `    for i=1,#s do\n`;
+                antiTamperCode += `        h = (h + string.byte(s, i) * i) % 0xFFFFFFFF\n`;
+                antiTamperCode += `    end\n`;
+                antiTamperCode += `    return h\n`;
+                antiTamperCode += `end\n\n`;
+
+                antiTamperCode += `local function _verify()\n`;
+                antiTamperCode += `    local expected = ${checksum}\n`;
+                antiTamperCode += `    local actual = _chk()\n`;
+                antiTamperCode += `    if expected ~= actual then\n`;
+                antiTamperCode += `        error("Integrity check failed!")\n`;
+                antiTamperCode += `    end\n`;
+                antiTamperCode += `    return true\n`;
+                antiTamperCode += `end\n\n`;
+
+                antiTamperCode += `local function _antiDebug()\n`;
+                antiTamperCode += `    local t = os.clock()\n`;
+                antiTamperCode += `    local function _check()\n`;
+                antiTamperCode += `        if os.clock() - t > 0.1 then\n`;
+                antiTamperCode += `            error("Debugger detected!")\n`;
+                antiTamperCode += `        end\n`;
+                antiTamperCode += `    end\n`;
+                antiTamperCode += `    _check()\n`;
+                antiTamperCode += `    return _check\n`;
+                antiTamperCode += `end\n\n`;
+
+                antiTamperCode += `local function _envCheck()\n`;
+                antiTamperCode += `    local env = getfenv and getfenv() or _ENV\n`;
+                antiTamperCode += `    if env.debug and env.debug.getinfo then\n`;
+                antiTamperCode += `        error("Debug environment detected!")\n`;
+                antiTamperCode += `    end\n`;
+                antiTamperCode += `    return true\n`;
+                antiTamperCode += `end\n\n`;
+
+                antiTamperCode += `_verify()\n`;
+                antiTamperCode += `local _debugCheck = _antiDebug()\n`;
+                antiTamperCode += `_envCheck()\n\n`;
+
+                antiTamperCode += code;
+
+                antiTamperCode += `\n\nlocal function _periodicCheck()\n`;
+                antiTamperCode += `    _debugCheck()\n`;
+                antiTamperCode += `    if math.random(1, 100) == 1 then\n`;
+                antiTamperCode += `        _verify()\n`;
+                antiTamperCode += `    end\n`;
+                antiTamperCode += `end\n\n`;
+
+                const lines = antiTamperCode.split('\n');
+                const obfuscatedLines = [];
+                let checkCounter = 0;
+
+                for (const line of lines) {
+                    obfuscatedLines.push(line);
+                    if (line.includes('function') || line.includes('if') || line.includes('while')) {
+                        checkCounter++;
+                        if (checkCounter % 3 === 0) {
+                            obfuscatedLines.push(`    _periodicCheck()`);
+                        }
+                    }
+                }
+
+                return obfuscatedLines.join('\n');
+            }
+
+            // ============ STRING ENCRYPTION ============
+            encryptStrings(code) {
+                const stringPattern = /"([^"]*)"|'([^']*)'/g;
+                let encrypted = '';
+
+                encrypted += `local function _dec(s, k)\n`;
+                encrypted += `    local r = ""\n`;
+                encrypted += `    for i=1,#s do\n`;
+                encrypted += `        local c = string.byte(s, i)\n`;
+                encrypted += `        local key = string.byte(k, (i-1)%#k+1)\n`;
+                encrypted += `        r = r .. string.char(bit32 and bit32.bxor(c, key) or (c ~ key))\n`;
+                encrypted += `    end\n`;
+                encrypted += `    return r\n`;
+                encrypted += `end\n\n`;
+
+                let lastEnd = 0;
+                let match;
+
+                while ((match = stringPattern.exec(code)) !== null) {
+                    const before = code.substring(lastEnd, match.index);
+                    encrypted += before;
+
+                    const originalString = match[1] || match[2];
+                    const encryptedString = this.encryptString(originalString);
+                    const key = this.generateEncryptionKey();
+
+                    encrypted += `(_dec("${encryptedString}", "${key}"))`;
+                    lastEnd = match.index + match[0].length;
+                }
+
+                encrypted += code.substring(lastEnd);
+                return encrypted;
+            }
+
+            encryptString(plaintext) {
+                const key = this.generateEncryptionKey();
+                let encrypted = '';
+
+                for (let i = 0; i < plaintext.length; i++) {
+                    const keyChar = key[i % key.length];
+                    const xorChar = plaintext.charCodeAt(i) ^ keyChar.charCodeAt(0);
+                    encrypted += this.toHex(xorChar);
+                }
+
+                return encrypted;
+            }
+
+            generateEncryptionKey() {
+                const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
+                let key = '';
+                for (let i = 0; i < 8; i++) {
+                    key += chars[Math.floor(this._random() * chars.length)];
+                }
+                return key;
+            }
+
+            toHex(b) {
+                return b.toString(16).padStart(2, '0').toUpperCase();
+            }
+
+            // ============ CONTROL FLOW OBFUSCATION ============
+            obfuscateControlFlow(code) {
+                const lines = code.split('\n');
+                const obfuscated = [];
+
+                for (const line of lines) {
+                    const trimmed = line.trim();
+                    if (trimmed.startsWith('if') || trimmed.startsWith('while') ||
+                        trimmed.startsWith('for') || trimmed.startsWith('function')) {
+                        const opaqueCondition = this.generateOpaquePredicate();
+                        obfuscated.push(line);
+                        obfuscated.push(`    if ${opaqueCondition} then`);
+                        obfuscated.push(`        -- Original code continues`);
+                        obfuscated.push(`    else`);
+                        obfuscated.push(`        -- Dead branch`);
+                        obfuscated.push(`        _dummy = ${this.generateRandomExpression()}`);
+                        obfuscated.push(`    end`);
+                    } else {
+                        obfuscated.push(line);
+                    }
+                }
+
+                return obfuscated.join('\n');
+            }
+
+            generateOpaquePredicate() {
+                const a = Math.floor(this._random() * 100) + 1;
+                const b = Math.floor(this._random() * 100) + 1;
+                const c = Math.floor(this._random() * 10) + 1;
+                return `(${a} * ${b} + ${c}) % ${Math.floor(this._random() * 8) + 2} == 0`;
+            }
+
+            generateRandomExpression() {
+                const a = Math.floor(this._random() * 100) + 1;
+                const b = Math.floor(this._random() * 100) + 1;
+                const op = ['+', '-', '*', '/'][Math.floor(this._random() * 4)];
+                return `${a} ${op} ${b}`;
+            }
+
+            // ============ DEAD CODE INSERTION ============
+            insertDeadCode(code) {
+                const lines = code.split('\n');
+                const result = [];
+                let deadCodeCount = 0;
+
+                for (let i = 0; i < lines.length; i++) {
+                    result.push(lines[i]);
+
+                    if (lines[i].includes('function') || lines[i].includes('then') ||
+                        lines[i].includes('do') || lines[i].includes('end')) {
+                        if (this._random() < 0.3 && deadCodeCount < 10) {
+                            const deadCode = this.generateDeadCode();
+                            result.push(`    -- Dead code ${deadCodeCount + 1}`);
+                            result.push(`    ${deadCode}`);
+                            deadCodeCount++;
+                        }
+                    }
+                }
+
+                return result.join('\n');
+            }
+
+            generateDeadCode() {
+                const deadVars = ['_a', '_b', '_c', '_d', '_e', '_f'];
+                const varName = deadVars[Math.floor(this._random() * deadVars.length)];
+                const value = Math.floor(this._random() * 1000) + 1;
+                return `local ${varName} = ${value}`;
+            }
+
+            // ============ MINIFY ============
+            minify(code) {
+                let minified = code;
+                minified = minified.replace(/--\[\[.*?\]\]--/gs, '');
+                minified = minified.replace(/--[^\n]*/g, '');
+                minified = minified.replace(/\s+/g, ' ');
+                minified = minified.replace(/\s*([,;=(){}[\]\.])\s*/g, '$1');
+                minified = minified.replace(/;\s*;/g, ';');
+                return minified.trim();
+            }
+
+            // ============ PACKAGE ============
+            packageObfuscatedCode(code) {
+                let header = `--[[\n`;
+                header += `    Obfuscated with Feather Obfuscator v2.0\n`;
+                header += `    Generated: ${new Date().toLocaleString()}\n`;
+                header += `    SHA1: ${this.computeSHA1(code)}\n`;
+                header += `--]]\n\n`;
+                return header + code;
+            }
+
+            // ============ UTILITY ============
+            computeSHA1(input) {
+                let hash = 0;
+                for (let i = 0; i < input.length; i++) {
+                    hash = ((hash << 5) - hash) + input.charCodeAt(i);
+                    hash = hash & hash;
+                }
+                return Math.abs(hash).toString(16).padStart(40, '0');
+            }
+
+            generateChecksumKey() {
+                const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/';
+                let result = '';
+                for (let i = 0; i < 32; i++) {
+                    result += chars[Math.floor(this._random() * chars.length)];
+                }
+                return result;
+            }
+
+            calculateChecksum(code) {
+                let checksum = 0;
+                for (let i = 0; i < code.length; i++) {
+                    checksum = (checksum * 31 + code.charCodeAt(i)) % 0xFFFFFFFF;
+                }
+                return checksum;
+            }
+
+            isKeyword(token, keyword = null) {
+                if (keyword) return token === keyword;
+                const keywords = new Set([
+                    'and', 'break', 'do', 'else', 'elseif', 'end', 'false', 'for', 'function',
+                    'if', 'in', 'local', 'nil', 'not', 'or', 'repeat', 'return', 'then', 'true',
+                    'until', 'while'
+                ]);
+                return keywords.has(token);
+            }
+
+            isIdentifier(token) {
+                return token && /^[a-zA-Z_][a-zA-Z0-9_]*$/.test(token);
+            }
+
+            isNumeric(token) {
+                return !isNaN(parseFloat(token)) && isFinite(token);
+            }
+
+            isString(token) {
+                return (token.startsWith('"') && token.endsWith('"')) ||
+                    (token.startsWith("'") && token.endsWith("'"));
+            }
+
+            isOperator(token) {
+                const operators = new Set([
+                    '+', '-', '*', '/', '^', '%', '==', '~=', '<', '>', '<=', '>=',
+                    'and', 'or', 'not', '..', '#'
+                ]);
+                return operators.has(token);
+            }
+        }
+
+        // ========================================
+        // UI CONTROLLERS
+        // ========================================
+
+        const obfuscator = new LuauObfuscator();
+
+        function obfuscate() {
+            const inputCode = document.getElementById('inputCode').value;
+            if (!inputCode.trim()) {
+                showStatus('Please enter some Luau code to obfuscate.', 'error');
+                return;
+            }
+
+            const options = {
+                encryptionLayers: parseInt(document.getElementById('encryptionLayers').value) || 3,
+                antiTamper: document.getElementById('antiTamper').checked,
+                stringEncrypt: document.getElementById('stringEncrypt').checked,
+                controlFlow: document.getElementById('controlFlow').checked,
+                deadCode: document.getElementById('deadCode').checked,
+                minify: document.getElementById('minify').checked,
+                useUnicodeNames: false,
+                nameLength: 8
+            };
+
+            showStatus('⏳ Obfuscating... Please wait.', 'info');
+
+            setTimeout(() => {
+                const result = obfuscator.obfuscate(inputCode, options);
+
+                if (result.success) {
+                    document.getElementById('outputCode').value = result.obfuscatedCode;
+                    document.getElementById('originalSize').textContent = result.originalSize;
+                    document.getElementById('obfuscatedSize').textContent = result.obfuscatedSize;
+                    const ratio = ((result.obfuscatedSize / result.originalSize) * 100);
+                    document.getElementById('sizeRatio').textContent = ratio.toFixed(1) + '%';
+                    document.getElementById('variablesCount').textContent = Object.keys(result.variableMap).length;
+
+                    // Show variable map
+                    const mapDiv = document.getElementById('variableMap');
+                    const keys = Object.keys(result.variableMap);
+                    if (keys.length > 0) {
+                        mapDiv.classList.add('show');
+                        mapDiv.innerHTML = '';
+                        for (const [original, obfuscated] of Object.entries(result.variableMap)) {
+                            const entry = document.createElement('div');
+                            entry.className = 'variable-entry';
+                            entry.innerHTML = `
+                                <span class="variable-original">${original}</span>
+                                <span class="variable-obfuscated">${obfuscated}</span>
+                            `;
+                            mapDiv.appendChild(entry);
+                        }
+                    } else {
+                        mapDiv.classList.remove('show');
+                    }
+
+                    showStatus(`✅ Obfuscation completed! ${keys.length} variables obfuscated.`, 'success');
+                } else {
+                    showStatus('❌ Error: ' + (result.error || 'Unknown error'), 'error');
+                }
+            }, 100);
+        }
+
+        function loadSample() {
+            const sample = `-- Advanced Luau Example
+local function fibonacci(n)
+    if n <= 1 then
+        return n
+    end
+    return fibonacci(n - 1) + fibonacci(n - 2)
+end
+
+local function processData(data)
+    local result = {}
+    for i, value in ipairs(data) do
+        if value > 0 then
+            table.insert(result, value * 2)
+        end
+    end
+    return result
+end
+
+local function main()
+    local numbers = {1, 2, 3, 4, 5, 6, 7, 8, 9, 10}
+    local processed = processData(numbers)
+    
+    for i, value in ipairs(processed) do
+        print("Value " .. i .. ": " .. value)
+    end
+    
+    local fibResult = fibonacci(10)
+    print("Fibonacci(10) = " .. fibResult)
+end
+
+main()`;
+
+            document.getElementById('inputCode').value = sample;
+            showStatus('📂 Sample code loaded! Click "Obfuscate" to protect it.', 'info');
+        }
+
+        function clearInput() {
+            document.getElementById('inputCode').value = '';
+            showStatus('🧹 Input cleared.', 'info');
+        }
+
+        function clearAll() {
+            document.getElementById('inputCode').value = '';
+            document.getElementById('outputCode').value = '';
+            document.getElementById('originalSize').textContent = '0';
+            document.getElementById('obfuscatedSize').textContent = '0';
+            document.getElementById('sizeRatio').textContent = '0%';
+            document.getElementById('variablesCount').textContent = '0';
+            document.getElementById('variableMap').classList.remove('show');
+            document.getElementById('variableMap').innerHTML = '';
+            document.getElementById('status').className = 'status';
+            document.getElementById('status').style.display = 'none';
+            showStatus('🧹 All cleared!', 'info');
+        }
+
+        function copyOutput() {
+            const output = document.getElementById('outputCode');
+            if (output.value) {
+                navigator.clipboard.writeText(output.value).then(() => {
+                    showStatus('📋 Copied to clipboard!', 'success');
+                }).catch(() => {
+                    output.select();
+                    document.execCommand('copy');
+                    showStatus('📋 Copied to clipboard!', 'success');
+                });
+            } else {
+                showStatus('No output to copy!', 'error');
+            }
+        }
+
+        function downloadOutput() {
+            const output = document.getElementById('outputCode').value;
+            if (output) {
+                const blob = new Blob([output], { type: 'text/plain' });
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = 'obfuscated_' + Date.now() + '.lua';
+                a.click();
+                URL.revokeObjectURL(url);
+                showStatus('💾 File downloaded!', 'success');
+            } else {
+                showStatus('No output to download!', 'error');
+            }
+        }
+
+        function showStatus(message, type) {
+            const status = document.getElementById('status');
+            status.textContent = message;
+            status.className = 'status ' + type;
+            status.style.display = 'block';
+
+            // Auto-hide after 5 seconds for success/info
+            if (type !== 'error') {
+                setTimeout(() => {
+                    status.style.display = 'none';
+                }, 5000);
+            }
+        }
+
+        // Keyboard shortcut: Ctrl+Enter to obfuscate
+        document.addEventListener('keydown', function(e) {
+            if (e.ctrlKey && e.key === 'Enter') {
+                e.preventDefault();
+                obfuscate();
+            }
+        });
+
+        // Auto-load sample on startup
+        loadSample();
+        console.log('🔒 Feather Obfuscator loaded successfully!');
+    </script>
+</body>
+</html>
