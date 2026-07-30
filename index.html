@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Feather Obfuscator - Luau Edition</title>
+    <title>Feather Obfuscator - Roblox Luau Edition</title>
     <style>
         * {
             margin: 0;
@@ -568,6 +568,17 @@
             font-weight: 600;
         }
 
+        .roblox-badge {
+            display: inline-block;
+            background: #1a2a3a;
+            color: #4facfe;
+            padding: 2px 10px;
+            border-radius: 12px;
+            font-size: 10px;
+            font-weight: 600;
+            margin-left: 8px;
+        }
+
         ::-webkit-scrollbar {
             width: 6px;
             height: 6px;
@@ -642,6 +653,7 @@
                 <h1>
                     Feather Obfuscator
                     <span class="version">v2.1</span>
+                    <span class="roblox-badge">ROBLOX LUAU</span>
                 </h1>
             </div>
             <div class="status-badge">
@@ -665,21 +677,26 @@
                     </div>
                 </div>
                 <div class="panel-body">
-                    <textarea id="inputCode" placeholder="Paste your Lua code here...">-- Fibonacci sequence
-local function fibonacci(n)
-    if n <= 1 then
-        return n
+                    <textarea id="inputCode" placeholder="Paste your Roblox Luau code here...">-- Roblox Luau Example
+local Players = game:GetService("Players")
+
+local function onPlayerAdded(player)
+    print("Player joined: " .. player.Name)
+    
+    local function onCharacterAdded(character)
+        print("Character loaded for: " .. player.Name)
+        local humanoid = character:FindFirstChild("Humanoid")
+        if humanoid then
+            humanoid.WalkSpeed = 16
+        end
     end
-    return fibonacci(n - 1) + fibonacci(n - 2)
+    
+    player.CharacterAdded:Connect(onCharacterAdded)
 end
 
-local function main()
-    for i = 1, 10 do
-        print("Fibonacci(" .. i .. ") = " .. fibonacci(i))
-    end
-end
+Players.PlayerAdded:Connect(onPlayerAdded)
 
-main()</textarea>
+print("Script loaded successfully!")</textarea>
                     <div class="file-info">
                         <span class="dot"></span>
                         input.lua
@@ -824,13 +841,13 @@ main()</textarea>
         <!-- Footer -->
         <div class="footer">
             <p>Your code never leaves this page — everything runs locally in your browser.</p>
-            <p style="margin-top: 4px;">Feather Obfuscator &bull; Luau Edition &bull; For educational purposes only</p>
+            <p style="margin-top: 4px;">Feather Obfuscator &bull; Roblox Luau Edition &bull; For educational purposes only</p>
         </div>
     </div>
 
     <script>
         // ========================================
-        // COMPLETE LUAU OBFUSCATOR ENGINE - FIXED
+        // ROBLOX LUAU OBFUSCATOR ENGINE
         // ========================================
 
         class LuauObfuscator {
@@ -840,6 +857,7 @@ main()</textarea>
                 this.tokens = [];
                 this.current = 0;
                 this._random = Math.random;
+                this.isRoblox = true; // Enable Roblox compatibility mode
             }
 
             obfuscate(sourceCode, options = {}) {
@@ -875,15 +893,15 @@ main()</textarea>
                     // Obfuscate AST
                     let obfuscatedCode = this.obfuscateAST(ast, options);
 
-                    // Anti-tamper
+                    // Anti-tamper (Roblox compatible)
                     if (options.antiTamper) {
-                        obfuscatedCode = this.addAntiTamper(obfuscatedCode);
+                        obfuscatedCode = this.addAntiTamperRoblox(obfuscatedCode);
                     }
 
-                    // String encryption - only if enabled and layers > 0
+                    // String encryption (Roblox compatible - uses bit32 which Roblox supports)
                     if (options.stringEncrypt && options.encryptionLayers > 0) {
                         for (let i = 0; i < options.encryptionLayers; i++) {
-                            obfuscatedCode = this.encryptStrings(obfuscatedCode);
+                            obfuscatedCode = this.encryptStringsRoblox(obfuscatedCode);
                         }
                     }
 
@@ -1414,7 +1432,7 @@ main()</textarea>
                     return { node: indexNode, consumed: current };
                 }
 
-                // Handle dot notation
+                // Handle dot notation (Roblox uses this heavily)
                 if (current < tokens.length && tokens[current] === '.') {
                     current++;
                     if (current < tokens.length && this.isIdentifier(tokens[current])) {
@@ -1423,6 +1441,18 @@ main()</textarea>
                         current++;
                         dotNode.children.push(exprNode);
                         return { node: dotNode, consumed: current };
+                    }
+                }
+
+                // Handle colon notation (Roblox method calls)
+                if (current < tokens.length && tokens[current] === ':') {
+                    current++;
+                    if (current < tokens.length && this.isIdentifier(tokens[current])) {
+                        const colonNode = { type: 'colon', children: [] };
+                        colonNode.value = tokens[current];
+                        current++;
+                        colonNode.children.push(exprNode);
+                        return { node: colonNode, consumed: current };
                     }
                 }
 
@@ -1472,8 +1502,19 @@ main()</textarea>
                     'until', 'while', 'self', 'super'
                 ]);
 
+                // Roblox-specific reserved names
+                const robloxReserved = new Set([
+                    'game', 'workspace', 'script', 'print', 'warn', 'error', 'task',
+                    'Players', 'RunService', 'ReplicatedStorage', 'ServerScriptService'
+                ]);
+
                 for (const identifier of identifiers) {
                     if (reservedKeywords.has(identifier)) continue;
+                    if (robloxReserved.has(identifier)) continue;
+                    
+                    // Don't obfuscate common Roblox services
+                    if (identifier.endsWith('Service')) continue;
+                    if (identifier.startsWith('_')) continue;
 
                     let obfuscatedName;
                     if (options.useUnicodeNames) {
@@ -1675,6 +1716,20 @@ main()</textarea>
                         }
                         break;
 
+                    case 'colon':
+                        if (node.children.length > 0) {
+                            this._obfuscateASTRecursive(node.children[0], indent, callback, options);
+                        }
+                        callback(':');
+                        if (node.value) {
+                            if (this.variableMap.has(node.value)) {
+                                callback(this.variableMap.get(node.value));
+                            } else {
+                                callback(node.value);
+                            }
+                        }
+                        break;
+
                     case 'for':
                         callback('for ');
                         if (this.variableMap.has(node.value)) {
@@ -1744,8 +1799,10 @@ main()</textarea>
                 }
             }
 
-            // ============ ANTI-TAMPER ============
-            addAntiTamper(code) {
+            // ============ ANTI-TAMPER - ROBLOX COMPATIBLE ============
+            addAntiTamperRoblox(code) {
+                // Roblox doesn't have os.clock() or getfenv() in the same way
+                // Use task.wait() and simpler checks
                 const checksum = this.calculateChecksum(code);
                 let antiTamperCode = '';
 
@@ -1767,10 +1824,11 @@ main()</textarea>
                 antiTamperCode += `    return true\n`;
                 antiTamperCode += `end\n\n`;
 
+                // Roblox-compatible anti-debug using task.wait()
                 antiTamperCode += `local function _antiDebug()\n`;
-                antiTamperCode += `    local t = os.clock()\n`;
+                antiTamperCode += `    local t = tick()\n`;
                 antiTamperCode += `    local function _check()\n`;
-                antiTamperCode += `        if os.clock() - t > 0.1 then\n`;
+                antiTamperCode += `        if tick() - t > 0.1 then\n`;
                 antiTamperCode += `            error("Debugger detected!")\n`;
                 antiTamperCode += `        end\n`;
                 antiTamperCode += `    end\n`;
@@ -1778,9 +1836,9 @@ main()</textarea>
                 antiTamperCode += `    return _check\n`;
                 antiTamperCode += `end\n\n`;
 
+                // Roblox-compatible environment check
                 antiTamperCode += `local function _envCheck()\n`;
-                antiTamperCode += `    local env = getfenv and getfenv() or _ENV\n`;
-                antiTamperCode += `    if env.debug and env.debug.getinfo then\n`;
+                antiTamperCode += `    if debug and debug.getinfo then\n`;
                 antiTamperCode += `        error("Debug environment detected!")\n`;
                 antiTamperCode += `    end\n`;
                 antiTamperCode += `    return true\n`;
@@ -1799,32 +1857,24 @@ main()</textarea>
                 antiTamperCode += `    end\n`;
                 antiTamperCode += `end\n\n`;
 
-                const lines = antiTamperCode.split('\n');
-                const obfuscatedLines = [];
-                let checkCounter = 0;
+                // Insert periodic checks using task.spawn or coroutines
+                antiTamperCode += `task.spawn(function()\n`;
+                antiTamperCode += `    while true do\n`;
+                antiTamperCode += `        task.wait(math.random(30, 120))\n`;
+                antiTamperCode += `        _periodicCheck()\n`;
+                antiTamperCode += `    end\n`;
+                antiTamperCode += `end)\n`;
 
-                for (const line of lines) {
-                    obfuscatedLines.push(line);
-                    if (line.includes('function') || line.includes('if') || line.includes('while')) {
-                        checkCounter++;
-                        if (checkCounter % 3 === 0) {
-                            obfuscatedLines.push(`    _periodicCheck()`);
-                        }
-                    }
-                }
-
-                return obfuscatedLines.join('\n');
+                return antiTamperCode;
             }
 
-            // ============ STRING ENCRYPTION - FIXED ============
-            encryptStrings(code) {
-                // Match both double and single quoted strings, handling escaped quotes
+            // ============ STRING ENCRYPTION - ROBLOX COMPATIBLE ============
+            encryptStringsRoblox(code) {
                 const stringPattern = /"([^"\\]*(\\.[^"\\]*)*)"|'([^'\\]*(\\.[^'\\]*)*)'/g;
                 let encrypted = '';
                 let lastEnd = 0;
                 let match;
 
-                // Check if there are any strings to encrypt
                 const hasStrings = stringPattern.test(code);
                 stringPattern.lastIndex = 0;
 
@@ -1832,14 +1882,13 @@ main()</textarea>
                     return code;
                 }
 
-                // Add decryption function only once
                 if (!code.includes('function _dec')) {
                     encrypted += `local function _dec(s, k)\n`;
                     encrypted += `    local r = ""\n`;
                     encrypted += `    for i=1,#s do\n`;
                     encrypted += `        local c = string.byte(s, i)\n`;
                     encrypted += `        local key = string.byte(k, (i-1)%#k+1)\n`;
-                    encrypted += `        r = r .. string.char(bit32 and bit32.bxor(c, key) or (c ~ key))\n`;
+                    encrypted += `        r = r .. string.char(bit32.bxor(c, key))\n`;
                     encrypted += `    end\n`;
                     encrypted += `    return r\n`;
                     encrypted += `end\n\n`;
@@ -1849,16 +1898,13 @@ main()</textarea>
                     const before = code.substring(lastEnd, match.index);
                     encrypted += before;
 
-                    // Get the matched string (group 1 for double quotes, group 3 for single quotes)
                     let originalString = match[1] || match[3];
                     
                     if (originalString === undefined || originalString === null) {
-                        // Fallback: extract from the full match
                         const fullMatch = match[0];
                         originalString = fullMatch.substring(1, fullMatch.length - 1);
                     }
 
-                    // Skip empty strings or very short strings
                     if (originalString.length < 2) {
                         encrypted += match[0];
                         lastEnd = match.index + match[0].length;
@@ -1978,13 +2024,9 @@ main()</textarea>
             // ============ MINIFY ============
             minify(code) {
                 let minified = code;
-                // Remove multi-line comments
                 minified = minified.replace(/--\[\[[\s\S]*?\]\]--/g, '');
-                // Remove single-line comments
                 minified = minified.replace(/--[^\n]*/g, '');
-                // Remove extra whitespace
                 minified = minified.replace(/\s+/g, ' ');
-                // Remove whitespace around certain characters
                 minified = minified.replace(/\s*([,;=(){}[\]\.])\s*/g, '$1');
                 minified = minified.replace(/;\s*;/g, ';');
                 return minified.trim();
@@ -1993,7 +2035,7 @@ main()</textarea>
             // ============ PACKAGE ============
             packageObfuscatedCode(code) {
                 let header = `--[[\n`;
-                header += `    Obfuscated with Feather Obfuscator v2.1\n`;
+                header += `    Obfuscated with Feather Obfuscator v2.1 (Roblox Luau)\n`;
                 header += `    Generated: ${new Date().toLocaleString()}\n`;
                 header += `    SHA1: ${this.computeSHA1(code)}\n`;
                 header += `--]]\n\n`;
@@ -2096,7 +2138,6 @@ main()</textarea>
                     document.getElementById('sizeRatio').textContent = ratio.toFixed(1) + '%';
                     document.getElementById('variablesCount').textContent = Object.keys(result.variableMap).length;
 
-                    // Show variable map
                     const mapDiv = document.getElementById('variableMap');
                     const keys = Object.keys(result.variableMap);
                     if (keys.length > 0) {
@@ -2123,40 +2164,29 @@ main()</textarea>
         }
 
         function loadSample() {
-            const sample = `-- Advanced Luau Example
-local function fibonacci(n)
-    if n <= 1 then
-        return n
-    end
-    return fibonacci(n - 1) + fibonacci(n - 2)
-end
+            const sample = `-- Roblox Luau Example
+local Players = game:GetService("Players")
 
-local function processData(data)
-    local result = {}
-    for i, value in ipairs(data) do
-        if value > 0 then
-            table.insert(result, value * 2)
+local function onPlayerAdded(player)
+    print("Player joined: " .. player.Name)
+    
+    local function onCharacterAdded(character)
+        print("Character loaded for: " .. player.Name)
+        local humanoid = character:FindFirstChild("Humanoid")
+        if humanoid then
+            humanoid.WalkSpeed = 16
         end
     end
-    return result
+    
+    player.CharacterAdded:Connect(onCharacterAdded)
 end
 
-local function main()
-    local numbers = {1, 2, 3, 4, 5, 6, 7, 8, 9, 10}
-    local processed = processData(numbers)
-    
-    for i, value in ipairs(processed) do
-        print("Value " .. i .. ": " .. value)
-    end
-    
-    local fibResult = fibonacci(10)
-    print("Fibonacci(10) = " .. fibResult)
-end
+Players.PlayerAdded:Connect(onPlayerAdded)
 
-main()`;
+print("Script loaded successfully!")`;
 
             document.getElementById('inputCode').value = sample;
-            showStatus('📂 Sample code loaded! Click "Obfuscate" to protect it.', 'info');
+            showStatus('📂 Sample Roblox code loaded! Click "Obfuscate" to protect it.', 'info');
         }
 
         function clearInput() {
@@ -2222,7 +2252,6 @@ main()`;
             }
         }
 
-        // Keyboard shortcut: Ctrl+Enter to obfuscate
         document.addEventListener('keydown', function(e) {
             if (e.ctrlKey && e.key === 'Enter') {
                 e.preventDefault();
@@ -2230,9 +2259,8 @@ main()`;
             }
         });
 
-        // Auto-load sample on startup
         loadSample();
-        console.log('🔒 Feather Obfuscator v2.1 loaded successfully!');
+        console.log('🔒 Feather Obfuscator - Roblox Luau Edition loaded successfully!');
     </script>
 </body>
 </html>
