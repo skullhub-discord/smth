@@ -39,6 +39,8 @@
             margin-bottom: 30px;
             padding-bottom: 20px;
             border-bottom: 1px solid #2a2a35;
+            flex-wrap: wrap;
+            gap: 12px;
         }
 
         .logo {
@@ -305,6 +307,22 @@
             background: white;
         }
 
+        .switch-small {
+            width: 36px;
+            height: 20px;
+        }
+
+        .switch-small .slider:before {
+            height: 14px;
+            width: 14px;
+            left: 3px;
+            bottom: 3px;
+        }
+
+        .switch-small input:checked + .slider:before {
+            transform: translateX(16px);
+        }
+
         input[type="range"] {
             -webkit-appearance: none;
             appearance: none;
@@ -342,6 +360,24 @@
             font-size: 10px;
             color: #5a5a6a;
             width: 120px;
+        }
+
+        .protection-toggles {
+            display: flex;
+            gap: 12px;
+            flex-wrap: wrap;
+            margin-top: 4px;
+        }
+
+        .protection-toggles .toggle-item {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .protection-toggles .toggle-item span {
+            font-size: 12px;
+            color: #a0a0b0;
         }
 
         .button-group {
@@ -415,7 +451,7 @@
 
         .stats {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+            grid-template-columns: repeat(auto-fit, minmax(100px, 1fr));
             gap: 12px;
             margin-top: 20px;
             padding: 16px;
@@ -435,7 +471,7 @@
         }
 
         .stat-label {
-            font-size: 11px;
+            font-size: 10px;
             color: #5a5a6a;
             margin-top: 2px;
             text-transform: uppercase;
@@ -516,15 +552,6 @@
             color: #3a3a4a;
         }
 
-        .footer a {
-            color: #6c5ce7;
-            text-decoration: none;
-        }
-
-        .footer a:hover {
-            color: #a855f7;
-        }
-
         .built-with {
             display: inline-flex;
             align-items: center;
@@ -578,6 +605,12 @@
             animation: slideIn 0.3s ease-out;
         }
 
+        .note {
+            font-size: 11px;
+            color: #5a5a6a;
+            margin-top: 4px;
+        }
+
         @media (max-width: 480px) {
             .container {
                 padding: 16px;
@@ -593,6 +626,9 @@
             .button-group .btn {
                 flex: 1 1 100%;
             }
+            .options-grid {
+                grid-template-columns: 1fr;
+            }
         }
     </style>
 </head>
@@ -605,7 +641,7 @@
                 <div class="logo-icon">F</div>
                 <h1>
                     Feather Obfuscator
-                    <span class="version">v2.0</span>
+                    <span class="version">v2.1</span>
                 </h1>
             </div>
             <div class="status-badge">
@@ -621,7 +657,7 @@
                 <div class="panel-header">
                     <div class="title">
                         <span class="icon">📄</span>
-                        Input
+                        input.lua
                     </div>
                     <div class="actions">
                         <button onclick="loadSample()">Load sample</button>
@@ -657,7 +693,7 @@ main()</textarea>
                 <div class="panel-header">
                     <div class="title">
                         <span class="icon">🔒</span>
-                        Output
+                        output.lua
                     </div>
                     <div class="actions">
                         <button onclick="copyOutput()">Copy</button>
@@ -682,13 +718,13 @@ main()</textarea>
                     <label>Encryption layers</label>
                     <div class="value">
                         <span id="layersDisplay">3</span>
-                        <input type="range" id="encryptionLayers" min="1" max="10" value="3" oninput="document.getElementById('layersDisplay').textContent=this.value">
+                        <input type="range" id="encryptionLayers" min="0" max="10" value="3" oninput="document.getElementById('layersDisplay').textContent=this.value">
                         <div class="range-labels">
-                            <span>1</span>
+                            <span>0</span>
                             <span>10</span>
                         </div>
                     </div>
-                    <div style="font-size: 11px; color: #5a5a6a;">Each layer adds an independent keystream pass. More layers = stronger, slightly larger.</div>
+                    <div class="note">Each layer adds an independent keystream pass. More layers = stronger, slightly larger.</div>
                 </div>
 
                 <div class="option-group">
@@ -707,30 +743,35 @@ main()</textarea>
 
                 <div class="option-group">
                     <label>Protection</label>
-                    <div style="display: flex; gap: 12px; flex-wrap: wrap; margin-top: 4px;">
-                        <label class="switch" style="width: 36px; height: 20px;">
-                            <input type="checkbox" id="stringEncrypt" checked>
-                            <span class="slider"></span>
-                        </label>
-                        <span style="font-size: 12px; color: #a0a0b0;">String</span>
-
-                        <label class="switch" style="width: 36px; height: 20px;">
-                            <input type="checkbox" id="controlFlow" checked>
-                            <span class="slider"></span>
-                        </label>
-                        <span style="font-size: 12px; color: #a0a0b0;">Control</span>
-
-                        <label class="switch" style="width: 36px; height: 20px;">
-                            <input type="checkbox" id="deadCode" checked>
-                            <span class="slider"></span>
-                        </label>
-                        <span style="font-size: 12px; color: #a0a0b0;">Dead code</span>
-
-                        <label class="switch" style="width: 36px; height: 20px;">
-                            <input type="checkbox" id="minify" checked>
-                            <span class="slider"></span>
-                        </label>
-                        <span style="font-size: 12px; color: #a0a0b0;">Minify</span>
+                    <div class="protection-toggles">
+                        <div class="toggle-item">
+                            <label class="switch switch-small">
+                                <input type="checkbox" id="stringEncrypt" checked>
+                                <span class="slider"></span>
+                            </label>
+                            <span>String</span>
+                        </div>
+                        <div class="toggle-item">
+                            <label class="switch switch-small">
+                                <input type="checkbox" id="controlFlow" checked>
+                                <span class="slider"></span>
+                            </label>
+                            <span>Control</span>
+                        </div>
+                        <div class="toggle-item">
+                            <label class="switch switch-small">
+                                <input type="checkbox" id="deadCode" checked>
+                                <span class="slider"></span>
+                            </label>
+                            <span>Dead code</span>
+                        </div>
+                        <div class="toggle-item">
+                            <label class="switch switch-small">
+                                <input type="checkbox" id="minify" checked>
+                                <span class="slider"></span>
+                            </label>
+                            <span>Minify</span>
+                        </div>
                     </div>
                 </div>
 
@@ -742,7 +783,7 @@ main()</textarea>
                         <span style="color: #3a3a4a;">•</span>
                         <span style="color: #5a5a6a;">JavaScript</span>
                     </div>
-                    <div style="font-size: 11px; color: #3a3a4a; margin-top: 4px;">Everything runs locally in your browser</div>
+                    <div class="note">Everything runs locally in your browser</div>
                 </div>
             </div>
 
@@ -789,7 +830,7 @@ main()</textarea>
 
     <script>
         // ========================================
-        // COMPLETE LUAU OBFUSCATOR ENGINE
+        // COMPLETE LUAU OBFUSCATOR ENGINE - FIXED
         // ========================================
 
         class LuauObfuscator {
@@ -839,8 +880,8 @@ main()</textarea>
                         obfuscatedCode = this.addAntiTamper(obfuscatedCode);
                     }
 
-                    // String encryption
-                    if (options.stringEncrypt) {
+                    // String encryption - only if enabled and layers > 0
+                    if (options.stringEncrypt && options.encryptionLayers > 0) {
                         for (let i = 0; i < options.encryptionLayers; i++) {
                             obfuscatedCode = this.encryptStrings(obfuscatedCode);
                         }
@@ -1043,7 +1084,7 @@ main()</textarea>
                     funcNode.children.push(paramsNode);
                 }
 
-                // Parse function body (using do/end or { } style)
+                // Parse function body
                 if (current < tokens.length) {
                     if (tokens[current] === '{') {
                         current++;
@@ -1469,7 +1510,7 @@ main()</textarea>
             // ============ OBFUSCATE AST ============
             obfuscateAST(node, options) {
                 let result = '';
-                this._obfuscateASTRecursive(node, 0, (output, indent) => {
+                this._obfuscateASTRecursive(node, 0, (output) => {
                     result += output;
                 }, options);
                 return result;
@@ -1482,26 +1523,26 @@ main()</textarea>
                     case 'root':
                         for (const child of node.children) {
                             this._obfuscateASTRecursive(child, indent, callback, options);
-                            callback('; ', indent);
+                            callback('; ');
                         }
                         break;
 
                     case 'function':
-                        callback('function ', indent);
+                        callback('function ');
                         if (node.value && this.variableMap.has(node.value)) {
-                            callback(this.variableMap.get(node.value), indent);
+                            callback(this.variableMap.get(node.value));
                         } else if (node.value) {
-                            callback(node.value, indent);
+                            callback(node.value);
                         }
 
                         for (const child of node.children) {
                             this._obfuscateASTRecursive(child, indent, callback, options);
                         }
-                        callback(' end', indent);
+                        callback(' end');
                         break;
 
                     case 'parameters':
-                        callback('(', indent);
+                        callback('(');
                         const paramNames = [];
                         for (const param of node.children) {
                             if (this.variableMap.has(param.value)) {
@@ -1510,20 +1551,20 @@ main()</textarea>
                                 paramNames.push(param.value);
                             }
                         }
-                        callback(paramNames.join(', '), indent);
-                        callback(')', indent);
+                        callback(paramNames.join(', '));
+                        callback(')');
                         break;
 
                     case 'local':
-                        callback('local ', indent);
+                        callback('local ');
                         if (this.variableMap.has(node.value)) {
-                            callback(this.variableMap.get(node.value), indent);
+                            callback(this.variableMap.get(node.value));
                         } else {
-                            callback(node.value, indent);
+                            callback(node.value);
                         }
 
                         if (node.children.length > 0) {
-                            callback(' = ', indent);
+                            callback(' = ');
                             for (const child of node.children) {
                                 this._obfuscateASTRecursive(child, indent, callback, options);
                             }
@@ -1531,11 +1572,11 @@ main()</textarea>
                         break;
 
                     case 'if':
-                        callback('if ', indent);
+                        callback('if ');
                         if (node.children.length > 0) {
                             this._obfuscateASTRecursive(node.children[0], indent, callback, options);
                         }
-                        callback(' then ', indent);
+                        callback(' then ');
 
                         if (node.children.length > 1) {
                             this._obfuscateASTRecursive(node.children[1], indent + 1, callback, options);
@@ -1545,23 +1586,23 @@ main()</textarea>
                             this._obfuscateASTRecursive(node.children[i], indent, callback, options);
                         }
 
-                        callback(' end', indent);
+                        callback(' end');
                         break;
 
                     case 'block':
-                        callback('\n' + '  '.repeat(indent), indent);
+                        callback('\n' + '  '.repeat(indent));
                         for (const child of node.children) {
                             this._obfuscateASTRecursive(child, indent + 1, callback, options);
-                            callback('\n' + '  '.repeat(indent + 1), indent);
+                            callback('\n' + '  '.repeat(indent + 1));
                         }
                         break;
 
                     case 'elseif':
-                        callback('elseif ', indent);
+                        callback('elseif ');
                         if (node.children.length > 0) {
                             this._obfuscateASTRecursive(node.children[0], indent, callback, options);
                         }
-                        callback(' then ', indent);
+                        callback(' then ');
 
                         if (node.children.length > 1) {
                             this._obfuscateASTRecursive(node.children[1], indent + 1, callback, options);
@@ -1571,9 +1612,9 @@ main()</textarea>
                     case 'expression':
                         if (node.value) {
                             if (this.variableMap.has(node.value)) {
-                                callback(this.variableMap.get(node.value), indent);
+                                callback(this.variableMap.get(node.value));
                             } else {
-                                callback(node.value, indent);
+                                callback(node.value);
                             }
                         }
                         break;
@@ -1581,7 +1622,7 @@ main()</textarea>
                     case 'operator':
                         if (node.children.length === 2) {
                             this._obfuscateASTRecursive(node.children[0], indent, callback, options);
-                            callback(' ' + node.value + ' ', indent);
+                            callback(' ' + node.value + ' ');
                             this._obfuscateASTRecursive(node.children[1], indent, callback, options);
                         }
                         break;
@@ -1589,116 +1630,116 @@ main()</textarea>
                     case 'call':
                         if (node.value) {
                             if (this.variableMap.has(node.value)) {
-                                callback(this.variableMap.get(node.value), indent);
+                                callback(this.variableMap.get(node.value));
                             } else {
-                                callback(node.value, indent);
+                                callback(node.value);
                             }
                         }
-                        callback('(', indent);
+                        callback('(');
                         const args = [];
                         for (const arg of node.children) {
                             let argStr = '';
                             this._obfuscateASTRecursive(arg, indent, (s) => { argStr += s; }, options);
                             args.push(argStr);
                         }
-                        callback(args.join(', '), indent);
-                        callback(')', indent);
+                        callback(args.join(', '));
+                        callback(')');
                         break;
 
                     case 'index':
                         if (node.value) {
                             if (this.variableMap.has(node.value)) {
-                                callback(this.variableMap.get(node.value), indent);
+                                callback(this.variableMap.get(node.value));
                             } else {
-                                callback(node.value, indent);
+                                callback(node.value);
                             }
                         }
-                        callback('[', indent);
+                        callback('[');
                         if (node.children.length > 0) {
                             this._obfuscateASTRecursive(node.children[0], indent, callback, options);
                         }
-                        callback(']', indent);
+                        callback(']');
                         break;
 
                     case 'dot':
                         if (node.children.length > 0) {
                             this._obfuscateASTRecursive(node.children[0], indent, callback, options);
                         }
-                        callback('.', indent);
+                        callback('.');
                         if (node.value) {
                             if (this.variableMap.has(node.value)) {
-                                callback(this.variableMap.get(node.value), indent);
+                                callback(this.variableMap.get(node.value));
                             } else {
-                                callback(node.value, indent);
+                                callback(node.value);
                             }
                         }
                         break;
 
                     case 'for':
-                        callback('for ', indent);
+                        callback('for ');
                         if (this.variableMap.has(node.value)) {
-                            callback(this.variableMap.get(node.value), indent);
+                            callback(this.variableMap.get(node.value));
                         } else {
-                            callback(node.value, indent);
+                            callback(node.value);
                         }
-                        callback(' = ', indent);
+                        callback(' = ');
 
                         if (node.children.length > 0) {
                             this._obfuscateASTRecursive(node.children[0], indent, callback, options);
                         }
                         if (node.children.length > 1) {
-                            callback(', ', indent);
+                            callback(', ');
                             this._obfuscateASTRecursive(node.children[1], indent, callback, options);
                         }
                         if (node.children.length > 2) {
-                            callback(', ', indent);
+                            callback(', ');
                             this._obfuscateASTRecursive(node.children[2], indent, callback, options);
                         }
 
                         if (node.children.length > 3) {
-                            callback(' do ', indent);
+                            callback(' do ');
                             this._obfuscateASTRecursive(node.children[3], indent + 1, callback, options);
                         }
-                        callback(' end', indent);
+                        callback(' end');
                         break;
 
                     case 'while':
-                        callback('while ', indent);
+                        callback('while ');
                         if (node.children.length > 0) {
                             this._obfuscateASTRecursive(node.children[0], indent, callback, options);
                         }
                         if (node.children.length > 1) {
-                            callback(' do ', indent);
+                            callback(' do ');
                             this._obfuscateASTRecursive(node.children[1], indent + 1, callback, options);
                         }
-                        callback(' end', indent);
+                        callback(' end');
                         break;
 
                     case 'repeat':
-                        callback('repeat ', indent);
+                        callback('repeat ');
                         if (node.children.length > 0) {
                             this._obfuscateASTRecursive(node.children[0], indent + 1, callback, options);
                         }
                         if (node.children.length > 1) {
-                            callback(' until ', indent);
+                            callback(' until ');
                             this._obfuscateASTRecursive(node.children[1], indent, callback, options);
                         }
                         break;
 
                     case 'return':
-                        callback('return', indent);
+                        callback('return');
                         if (node.children.length > 0) {
-                            callback(' ', indent);
+                            callback(' ');
                             this._obfuscateASTRecursive(node.children[0], indent, callback, options);
                         }
                         break;
 
                     case 'break':
-                        callback('break', indent);
+                        callback('break');
                         break;
 
                     default:
-                        if (node.value) callback(node.value, indent);
+                        if (node.value) callback(node.value);
                         break;
                 }
             }
@@ -1775,29 +1816,55 @@ main()</textarea>
                 return obfuscatedLines.join('\n');
             }
 
-            // ============ STRING ENCRYPTION ============
+            // ============ STRING ENCRYPTION - FIXED ============
             encryptStrings(code) {
-                const stringPattern = /"([^"]*)"|'([^']*)'/g;
+                // Match both double and single quoted strings, handling escaped quotes
+                const stringPattern = /"([^"\\]*(\\.[^"\\]*)*)"|'([^'\\]*(\\.[^'\\]*)*)'/g;
                 let encrypted = '';
-
-                encrypted += `local function _dec(s, k)\n`;
-                encrypted += `    local r = ""\n`;
-                encrypted += `    for i=1,#s do\n`;
-                encrypted += `        local c = string.byte(s, i)\n`;
-                encrypted += `        local key = string.byte(k, (i-1)%#k+1)\n`;
-                encrypted += `        r = r .. string.char(bit32 and bit32.bxor(c, key) or (c ~ key))\n`;
-                encrypted += `    end\n`;
-                encrypted += `    return r\n`;
-                encrypted += `end\n\n`;
-
                 let lastEnd = 0;
                 let match;
+
+                // Check if there are any strings to encrypt
+                const hasStrings = stringPattern.test(code);
+                stringPattern.lastIndex = 0;
+
+                if (!hasStrings) {
+                    return code;
+                }
+
+                // Add decryption function only once
+                if (!code.includes('function _dec')) {
+                    encrypted += `local function _dec(s, k)\n`;
+                    encrypted += `    local r = ""\n`;
+                    encrypted += `    for i=1,#s do\n`;
+                    encrypted += `        local c = string.byte(s, i)\n`;
+                    encrypted += `        local key = string.byte(k, (i-1)%#k+1)\n`;
+                    encrypted += `        r = r .. string.char(bit32 and bit32.bxor(c, key) or (c ~ key))\n`;
+                    encrypted += `    end\n`;
+                    encrypted += `    return r\n`;
+                    encrypted += `end\n\n`;
+                }
 
                 while ((match = stringPattern.exec(code)) !== null) {
                     const before = code.substring(lastEnd, match.index);
                     encrypted += before;
 
-                    const originalString = match[1] || match[2];
+                    // Get the matched string (group 1 for double quotes, group 3 for single quotes)
+                    let originalString = match[1] || match[3];
+                    
+                    if (originalString === undefined || originalString === null) {
+                        // Fallback: extract from the full match
+                        const fullMatch = match[0];
+                        originalString = fullMatch.substring(1, fullMatch.length - 1);
+                    }
+
+                    // Skip empty strings or very short strings
+                    if (originalString.length < 2) {
+                        encrypted += match[0];
+                        lastEnd = match.index + match[0].length;
+                        continue;
+                    }
+
                     const encryptedString = this.encryptString(originalString);
                     const key = this.generateEncryptionKey();
 
@@ -1810,6 +1877,8 @@ main()</textarea>
             }
 
             encryptString(plaintext) {
+                if (!plaintext || plaintext.length === 0) return '00';
+                
                 const key = this.generateEncryptionKey();
                 let encrypted = '';
 
@@ -1839,21 +1908,22 @@ main()</textarea>
             obfuscateControlFlow(code) {
                 const lines = code.split('\n');
                 const obfuscated = [];
+                let inserted = 0;
 
                 for (const line of lines) {
                     const trimmed = line.trim();
-                    if (trimmed.startsWith('if') || trimmed.startsWith('while') ||
-                        trimmed.startsWith('for') || trimmed.startsWith('function')) {
+                    obfuscated.push(line);
+                    
+                    if (inserted < 5 && (trimmed.startsWith('if') || trimmed.startsWith('while') ||
+                        trimmed.startsWith('for') || trimmed.startsWith('function'))) {
                         const opaqueCondition = this.generateOpaquePredicate();
-                        obfuscated.push(line);
                         obfuscated.push(`    if ${opaqueCondition} then`);
                         obfuscated.push(`        -- Original code continues`);
                         obfuscated.push(`    else`);
                         obfuscated.push(`        -- Dead branch`);
                         obfuscated.push(`        _dummy = ${this.generateRandomExpression()}`);
                         obfuscated.push(`    end`);
-                    } else {
-                        obfuscated.push(line);
+                        inserted++;
                     }
                 }
 
@@ -1883,12 +1953,13 @@ main()</textarea>
                 for (let i = 0; i < lines.length; i++) {
                     result.push(lines[i]);
 
-                    if (lines[i].includes('function') || lines[i].includes('then') ||
-                        lines[i].includes('do') || lines[i].includes('end')) {
-                        if (this._random() < 0.3 && deadCodeCount < 10) {
+                    if (deadCodeCount < 8 && (lines[i].includes('function') || lines[i].includes('then') ||
+                        lines[i].includes('do') || lines[i].includes('end'))) {
+                        if (this._random() < 0.25) {
                             const deadCode = this.generateDeadCode();
-                            result.push(`    -- Dead code ${deadCodeCount + 1}`);
-                            result.push(`    ${deadCode}`);
+                            const indent = lines[i].match(/^\s*/)[0];
+                            result.push(`${indent}    -- Dead code ${deadCodeCount + 1}`);
+                            result.push(`${indent}    ${deadCode}`);
                             deadCodeCount++;
                         }
                     }
@@ -1907,9 +1978,13 @@ main()</textarea>
             // ============ MINIFY ============
             minify(code) {
                 let minified = code;
-                minified = minified.replace(/--\[\[.*?\]\]--/gs, '');
+                // Remove multi-line comments
+                minified = minified.replace(/--\[\[[\s\S]*?\]\]--/g, '');
+                // Remove single-line comments
                 minified = minified.replace(/--[^\n]*/g, '');
+                // Remove extra whitespace
                 minified = minified.replace(/\s+/g, ' ');
+                // Remove whitespace around certain characters
                 minified = minified.replace(/\s*([,;=(){}[\]\.])\s*/g, '$1');
                 minified = minified.replace(/;\s*;/g, ';');
                 return minified.trim();
@@ -1918,7 +1993,7 @@ main()</textarea>
             // ============ PACKAGE ============
             packageObfuscatedCode(code) {
                 let header = `--[[\n`;
-                header += `    Obfuscated with Feather Obfuscator v2.0\n`;
+                header += `    Obfuscated with Feather Obfuscator v2.1\n`;
                 header += `    Generated: ${new Date().toLocaleString()}\n`;
                 header += `    SHA1: ${this.computeSHA1(code)}\n`;
                 header += `--]]\n\n`;
@@ -1971,7 +2046,7 @@ main()</textarea>
             }
 
             isString(token) {
-                return (token.startsWith('"') && token.endsWith('"')) ||
+                return token && (token.startsWith('"') && token.endsWith('"')) ||
                     (token.startsWith("'") && token.endsWith("'"));
             }
 
@@ -2017,7 +2092,7 @@ main()</textarea>
                     document.getElementById('outputCode').value = result.obfuscatedCode;
                     document.getElementById('originalSize').textContent = result.originalSize;
                     document.getElementById('obfuscatedSize').textContent = result.obfuscatedSize;
-                    const ratio = ((result.obfuscatedSize / result.originalSize) * 100);
+                    const ratio = result.originalSize > 0 ? ((result.obfuscatedSize / result.originalSize) * 100) : 0;
                     document.getElementById('sizeRatio').textContent = ratio.toFixed(1) + '%';
                     document.getElementById('variablesCount').textContent = Object.keys(result.variableMap).length;
 
@@ -2140,7 +2215,6 @@ main()`;
             status.className = 'status ' + type;
             status.style.display = 'block';
 
-            // Auto-hide after 5 seconds for success/info
             if (type !== 'error') {
                 setTimeout(() => {
                     status.style.display = 'none';
@@ -2158,7 +2232,7 @@ main()`;
 
         // Auto-load sample on startup
         loadSample();
-        console.log('🔒 Feather Obfuscator loaded successfully!');
+        console.log('🔒 Feather Obfuscator v2.1 loaded successfully!');
     </script>
 </body>
 </html>
