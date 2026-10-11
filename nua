@@ -1,7 +1,23 @@
-    function LPH_NO_VIRTUALIZE(f) return f end
-    function LPH_JIT_MAX(f) return f end
-    function LPH_JIT(f) return f end
-    function LPH_ENCFUNC(f) return f end
+local ls = loadstring or load
+
+if ls then
+    local chunk = ls([[
+        function LPH_NO_VIRTUALIZE(f) return f end
+        function LPH_JIT_MAX(f) return f end
+        function LPH_JIT(f) return f end
+        function LPH_ENCFUNC(f) return f end
+    ]])
+    if chunk then
+        if setfenv then setfenv(chunk, getfenv(1)) end
+        chunk()
+    end
+else
+    -- loadstring unavailable: define them directly
+    LPH_NO_VIRTUALIZE = function(f) return f end
+    LPH_JIT_MAX       = function(f) return f end
+    LPH_JIT           = function(f) return f end
+    LPH_ENCFUNC       = function(f) return f end
+end
 
 eli_inext = function(t, i)
     i = i + 1;
