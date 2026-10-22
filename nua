@@ -1,4 +1,6 @@
---[[ Qwen67 UILibrary - standalone extraction ]]
+-- ============================================================================
+-- 1. THE FULL UI LIBRARY
+-- ============================================================================
 local UILibrary = (function()
 
 local Players           = game:GetService("Players")
@@ -1492,9 +1494,6 @@ function UILibrary:AddLabel(sub, cfg)
 	return obj
 end
 
--- ============================================================================
--- Added widgets: Keybind, Textbox
--- ============================================================================
 local KEY_SHORT = {
 	LeftShift = "LS", RightShift = "RS", LeftControl = "LC", RightControl = "RC",
 	LeftAlt = "LA", RightAlt = "RA", Insert = "INS", Backspace = "BS", Return = "ENT",
@@ -1680,7 +1679,6 @@ function UILibrary:AddTextbox(sub, cfg)
 	return obj
 end
 
--- Simple notification toasts (bottom-right)
 local notifHolder
 function UILibrary:Notify(text, duration)
 	if not screenGui then return end
@@ -1888,29 +1886,40 @@ end
 
 function UILibrary:ToggleUI()
 	uiVisible = not uiVisible
-	if mainPanel then mainPanel.Visible = uiVisible end
-	if sidebar then sidebar.Visible = uiVisible end
-	if subBar then subBar.Visible = uiVisible end
-	if FOV_Circle then
-		if not uiVisible then
-			FOV_Circle.Visible = false
-		elseif autoTarget and autoTarget.on then
+
+	local targetTrans = uiVisible and 0 or 1
+	local tw = TweenService:Create(Stage, TweenInfo.new(0.25, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), { GroupTransparency = targetTrans })
+
+	if uiVisible then
+		Stage.Visible = true
+		tw:Play()
+		if FOV_Circle and autoTarget and autoTarget.on then
 			FOV_Circle.Visible = true
 		end
-	end
-	if hudRefs and hudRefs.outer and not uiVisible then
-		hudRefs.outer.Visible = false
-	end
-	if footerRefs and footerRefs.footer then
-		footerRefs.footer.Visible = watermarkVisible
+		if footerRefs and footerRefs.footer then
+			footerRefs.footer.Visible = watermarkVisible
+		end
+	else
+		tw:Play()
+		tw.Completed:Connect(function()
+			if not uiVisible then
+				Stage.Visible = false
+			end
+		end)
+		if FOV_Circle then FOV_Circle.Visible = false end
+		if hudRefs and hudRefs.outer then hudRefs.outer.Visible = false end
 	end
 end
 
 function UILibrary:SetUIVisible(v)
 	uiVisible = v and true or false
-	if mainPanel then mainPanel.Visible = uiVisible end
-	if sidebar then sidebar.Visible = uiVisible end
-	if subBar then subBar.Visible = uiVisible end
+	if uiVisible then
+		Stage.Visible = true
+		tween(Stage, 0.25, { GroupTransparency = 0 })
+	else
+		tween(Stage, 0.25, { GroupTransparency = 1 })
+		task.delay(0.25, function() if not uiVisible then Stage.Visible = false end end)
+	end
 end
 
 function UILibrary:IsUIVisible() return uiVisible end
@@ -2355,13 +2364,15 @@ function UILibrary:Build(opts)
 		ZIndexBehavior = Enum.ZIndexBehavior.Sibling,
 	})
 
-	Stage = I("Frame", {
+	-- Changed to CanvasGroup so we can fade everything smoothly
+	Stage = I("CanvasGroup", {
 		Name = "Stage",
 		Parent = screenGui,
 		AnchorPoint = Vector2.new(0.5, 0.5),
 		Position = UDim2.new(0.5, 0, 0.5, 0),
 		Size = UDim2.fromOffset(CANVAS_W, CANVAS_H),
 		BackgroundTransparency = 1,
+		GroupTransparency = 0,
 	})
 
 	buildMainPanel()
@@ -2376,84 +2387,59 @@ function UILibrary:Build(opts)
 	setupDragging()
 
 	-- =====================================================================
-	-- AX MOBILE: detection, resize, draggable floating button
+	-- DYNAMIC SCALING AND BOTTOM-RIGHT TOGGLE BUTTON
 	-- =====================================================================
 	do
-		local isMobile = false
-		pcall(function()
-			-- NOTE: originally referenced Services.Mobile (from the LucentV2 host table);
-			-- switched to UserInputService.PreferredInput so the library stands alone.
-			isMobile = UserInputService.TouchEnabled and not UserInputService.KeyboardEnabled and not UserInputService.MouseEnabled
-				and UserInputService.PreferredInput ~= Enum.PreferredInput.KeyboardAndMouse
-		end)
-		if isMobile then
+		local scale = opts.Scale or 1
+		local isMobileDevice = opts.IsMobile or false
+
+		-- Handle scaling for Tablet and Phone
+		if scale ~= 1 or isMobileDevice then
 			local oldScale = Stage:FindFirstChild("AX_UIScale")
 			if oldScale then oldScale:Destroy() end
 			local sc = Instance.new("UIScale")
 			sc.Name = "AX_UIScale"
-			sc.Scale = 0.62
+			sc.Scale = scale
 			sc.Parent = Stage
 		end
-
-		if isMobile then
-		local pgFab = playerGui
-		local oldFab = pgFab:FindFirstChild("LucentV2_FAB")
-		if oldFab then oldFab:Destroy() end
-		local fabGui = Instance.new("ScreenGui")
-		fabGui.Name = "LucentV2_FAB"
-		fabGui.ResetOnSpawn = false
-		fabGui.IgnoreGuiInset = true
-		fabGui.DisplayOrder = 500
-		fabGui.Parent = pgFab
-		local fab = Instance.new("TextButton")
-		fab.Name = "FAB"
-		fab.AnchorPoint = Vector2.new(0.5, 0.5)
-		fab.Position = UDim2.new(1, -46, 0.5, 0)
-		fab.Size = UDim2.fromOffset(56, 56)
-		fab.BackgroundColor3 = Color3.fromRGB(25, 25, 30)
-		fab.BackgroundTransparency = 0.25
-		fab.Text = "V"
-		fab.TextColor3 = Color3.fromRGB(255, 194, 75)
-		fab.TextSize = 26
-		fab.Font = Enum.Font.GothamBold
-		fab.AutoButtonColor = true
-		fab.BorderSizePixel = 0
-		fab.Parent = fabGui
-		local corner = Instance.new("UICorner")
-		corner.CornerRadius = UDim.new(1, 0)
-		corner.Parent = fab
-		local stroke = Instance.new("UIStroke")
-		stroke.Color = Color3.fromRGB(255, 194, 75)
-		stroke.Thickness = 2
-		stroke.Transparency = 0.3
-		stroke.Parent = fab
-
-		local dragging, dragStart, startPos, moved
-		fab.InputBegan:Connect(function(input)
-			if input.UserInputType == Enum.UserInputType.Touch or input.UserInputType == Enum.UserInputType.MouseButton1 then
-				dragging = true
-				moved = false
-				dragStart = input.Position
-				startPos = fab.Position
-			end
-		end)
-		UserInputService.InputChanged:Connect(function(input)
-			if dragging and (input.UserInputType == Enum.UserInputType.Touch or input.UserInputType == Enum.UserInputType.MouseMovement) then
-				local d = input.Position - dragStart
-				if math.abs(d.X) + math.abs(d.Y) > 6 then moved = true end
-				fab.Position = UDim2.new(startPos.X.Scale, startPos.X.Offset + d.X, startPos.Y.Scale, startPos.Y.Offset + d.Y)
-			end
-		end)
-		UserInputService.InputEnded:Connect(function(input)
-			if input.UserInputType == Enum.UserInputType.Touch or input.UserInputType == Enum.UserInputType.MouseButton1 then
-				if dragging and not moved then
-					pcall(function() UILibrary:ToggleUI() end)
-				end
-				dragging = false
-			end
-		end)
-		end
 	end
+
+	-- Bottom Right Fade Toggle Button (Sleek Custom Design)
+	local toggleBtn = I("TextButton", {
+		Parent = screenGui,
+		Name = "ToggleUIButton",
+		AnchorPoint = Vector2.new(1, 1),
+		Position = UDim2.new(1, -24, 1, -24),
+		Size = UDim2.fromOffset(120, 34), -- Wider rectangle shape
+		BackgroundColor3 = C("SubBarBg"),
+		BorderSizePixel = 0,
+		Text = "",
+		ZIndex = 1000,
+		AutoButtonColor = false
+	})
+	I("UICorner", { Parent = toggleBtn, CornerRadius = UDim.new(1, 0) }) -- Pill shape (fully rounded edges)
+	local btnStroke = strokeOn(toggleBtn, "Border", 1, 0.4)
+	btnStroke.ZIndex = 1001
+
+	-- Hamburger Menu Icon
+	local btnIcon = Icon.hamburger(toggleBtn, 20, 17, 14, C("TextDim"))
+	btnIcon.ZIndex = 1002
+
+	-- Text Label
+	local btnText = txt(toggleBtn, 36, 0, 74, 34, "Toggle UI", 12, "TextDim", "medium")
+	btnText.ZIndex = 1002
+
+	toggleBtn.MouseEnter:Connect(function()
+		tween(toggleBtn, 0.15, {BackgroundColor3 = C("HoverBg")})
+		tween(btnIcon, 0.15, {ImageColor3 = C("Active")})
+		tween(btnText, 0.15, {TextColor3 = C("Active")})
+	end)
+	toggleBtn.MouseLeave:Connect(function()
+		tween(toggleBtn, 0.15, {BackgroundColor3 = C("SubBarBg")})
+		tween(btnIcon, 0.15, {ImageColor3 = C("TextDim")})
+		tween(btnText, 0.15, {TextColor3 = C("TextDim")})
+	end)
+	toggleBtn.MouseButton1Click:Connect(function() UILibrary:ToggleUI() end)
 
 	if autoConn then pcall(function() autoConn:Disconnect() end) end
 	autoConn = RunService.RenderStepped:Connect(autoTargetTick)
@@ -2490,3 +2476,129 @@ end
 
 return UILibrary
 end)()
+
+
+-- ============================================================================
+-- 2. DEVICE PROMPT & DEMO USAGE
+-- ============================================================================
+local function loadExampleUI()
+    local TabMain = UILibrary:AddTab({ Name = "Main", Icon = "target" })
+    local TabVisuals = UILibrary:AddTab({ Name = "Visuals", Icon = "eye" })
+
+    UILibrary:AddSubTab(TabMain, {
+        Name = "aimbot",
+        Icon = "target",
+        Build = function(sub)
+            UILibrary:AddLabel(sub, { Text = "Full UI test section" })
+
+            local Enabled = UILibrary:AddToggle(sub, {
+                Name = "enabled",
+                Default = false,
+                Callback = function(v) print("Aimbot enabled:", v) end,
+            })
+
+            Enabled:AddKeybind({
+                Name = "aimbot key",
+                Default = Enum.KeyCode.E,
+                Mode = "Toggle",
+                Callback = function(key, mode) print("Aimbot key changed to", key, "Mode:", mode) end,
+            })
+
+            UILibrary:AddSlider(sub, {
+                Name = "smoothing",
+                Min = 0,
+                Max = 30,
+                Default = 10,
+                Step = 1,
+                Callback = function(v) print("Smoothing:", v) end,
+            })
+
+            UILibrary:AddDropdown(sub, {
+                Name = "hitbox",
+                Options = { "Head", "Torso", "Random" },
+                Default = "Head",
+                Callback = function(v) print("Hitbox:", v) end,
+            })
+        end,
+    })
+
+    UILibrary:AddSubTab(TabVisuals, {
+        Name = "colors",
+        Icon = "palette",
+        Build = function(sub)
+            UILibrary:AddColorPicker(sub, {
+                Name = "esp color",
+                Default = Color3.fromRGB(255, 0, 0),
+                Callback = function(c) print("ESP Color changed to:", c) end,
+            })
+
+            UILibrary:AddButton(sub, {
+                Name = "Send Notification",
+                Callback = function()
+                    UILibrary:Notify("This is a test notification from the UI!", 3)
+                end,
+            })
+        end,
+    })
+end
+
+local function AskForDeviceAndLoad()
+    local player = game:GetService("Players").LocalPlayer
+    local pGui = player:WaitForChild("PlayerGui")
+
+    local gui = Instance.new("ScreenGui")
+    gui.Name = "DeviceSelector"
+    gui.ResetOnSpawn = false
+    gui.IgnoreGuiInset = true
+    gui.DisplayOrder = 999
+    gui.Parent = pGui
+
+    local bg = Instance.new("Frame")
+    bg.Size = UDim2.new(0, 320, 0, 210)
+    bg.Position = UDim2.new(0.5, -160, 0.5, -105)
+    bg.BackgroundColor3 = Color3.fromRGB(15, 15, 18)
+    bg.BorderSizePixel = 0
+    bg.Parent = gui
+    Instance.new("UICorner", bg).CornerRadius = UDim.new(0, 10)
+
+    local stroke = Instance.new("UIStroke", bg)
+    stroke.Color = Color3.fromRGB(40, 40, 45)
+    stroke.Thickness = 1
+
+    local title = Instance.new("TextLabel")
+    title.Size = UDim2.new(1, 0, 0, 50)
+    title.BackgroundTransparency = 1
+    title.Text = "What device are you using?"
+    title.TextColor3 = Color3.fromRGB(230, 230, 235)
+    title.Font = Enum.Font.GothamBold
+    title.TextSize = 16
+    title.Parent = bg
+
+    local function makeBtn(text, yPos, scaleValue, isMobileDevice)
+        local btn = Instance.new("TextButton")
+        btn.Size = UDim2.new(0, 280, 0, 38)
+        btn.Position = UDim2.new(0, 20, 0, yPos)
+        btn.BackgroundColor3 = Color3.fromRGB(30, 30, 36)
+        btn.Text = text
+        btn.TextColor3 = Color3.fromRGB(200, 200, 205)
+        btn.Font = Enum.Font.GothamMedium
+        btn.TextSize = 14
+        btn.Parent = bg
+        Instance.new("UICorner", btn).CornerRadius = UDim.new(0, 6)
+        
+        btn.MouseEnter:Connect(function() btn.BackgroundColor3 = Color3.fromRGB(45, 45, 55) end)
+        btn.MouseLeave:Connect(function() btn.BackgroundColor3 = Color3.fromRGB(30, 30, 36) end)
+        
+        btn.MouseButton1Click:Connect(function()
+            gui:Destroy()
+            UILibrary:Build({ EnableSettings = true, Scale = scaleValue, IsMobile = isMobileDevice })
+            loadExampleUI()
+        end)
+    end
+
+    makeBtn("PC (100% size)", 60, 1.0, false)
+    makeBtn("Tablet (85% size)", 108, 0.85, true)
+    makeBtn("Phone (65% size)", 156, 0.65, true)
+end
+
+AskForDeviceAndLoad()
